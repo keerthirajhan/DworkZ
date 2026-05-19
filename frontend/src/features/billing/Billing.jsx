@@ -168,9 +168,16 @@ const Billing = () => {
     }
   };
 
-  const totalCollected = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
-  const pendingPayments = invoices.filter(i => i.status === 'Pending').reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
-  const overdueAmount = invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
+  const getInvoiceTotal = (i) => {
+    const subTotal = (Number(i.baseAmount) || 0) + (Number(i.overageAmount) || 0);
+    const cgst = Number((subTotal * 0.09).toFixed(2));
+    const sgst = Number((subTotal * 0.09).toFixed(2));
+    return Number((subTotal + cgst + sgst).toFixed(2));
+  };
+
+  const totalCollected = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + getInvoiceTotal(i), 0);
+  const pendingPayments = invoices.filter(i => i.status === 'Pending').reduce((sum, i) => sum + getInvoiceTotal(i), 0);
+  const overdueAmount = invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + getInvoiceTotal(i), 0);
 
   const filteredInvoices = invoices.filter(i => 
     i.invoiceId.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -241,7 +248,7 @@ const Billing = () => {
                   <div className="font-bold text-textMain uppercase tracking-tight">{invoice.clientId?.companyName || invoice.bookingId?.clientName || 'Visitor'}</div>
                 </td>
                 <td className="px-8 py-6">
-                  <div className="font-black text-textMain text-lg">₹{Number(invoice.totalAmount).toLocaleString()}</div>
+                  <div className="font-black text-textMain text-lg">₹{getInvoiceTotal(invoice).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
                   <div className="text-[10px] uppercase font-black text-textMuted tracking-widest mt-0.5">{invoice.billingPeriod}</div>
                 </td>
                 <td className="px-8 py-6">{getStatusBadge(invoice.status)}</td>
