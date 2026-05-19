@@ -1360,10 +1360,18 @@ const ClientDetail = () => {
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-primary uppercase tracking-widest">Membership Plan</label>
                       <select value={editFormData.planType} onChange={(e) => setEditFormData({...editFormData, planType: e.target.value})} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none">
-                        <option value="Monthly">Monthly</option>
-                        <option value="Daily">Daily</option>
-                        <option value="Weekly">Weekly</option>
-                        {editFormData.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
+                        {editFormData.workspaceType === 'Individual Seat' ? (
+                          <option value="Monthly">Monthly (Locked)</option>
+                        ) : editFormData.workspaceType === 'Cabin' ? (
+                          <option value="Yearly">Yearly (Locked)</option>
+                        ) : (
+                          <>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            {editFormData.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
+                          </>
+                        )}
                       </select>
                     </div>
                     <div className="space-y-1.5">
@@ -1418,10 +1426,18 @@ const ClientDetail = () => {
                     onChange={(e) => setProposalFormData({...proposalFormData, proposedPlan: e.target.value})}
                     className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
                   >
-                    <option value="Hourly">Hourly</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Monthly">Monthly</option>
-                    {client?.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
+                    {client?.workspaceType === 'Individual Seat' ? (
+                      <option value="Monthly">Monthly (Locked)</option>
+                    ) : client?.workspaceType === 'Cabin' ? (
+                      <option value="Yearly">Yearly (Locked)</option>
+                    ) : (
+                      <>
+                        <option value="Hourly">Hourly</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Monthly">Monthly</option>
+                        {client?.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className="space-y-1.5">
