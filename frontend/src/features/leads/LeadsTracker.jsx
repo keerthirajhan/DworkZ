@@ -1426,7 +1426,8 @@ const LeadsTracker = () => {
                       onChange={(e) => {
                         const type = e.target.value;
                         const plan = type === 'Cabin' ? 'Yearly' : 'Monthly';
-                        setNewLead({ ...newLead, workspaceType: type, planType: plan });
+                        const seats = type === 'Individual Seat' ? '1' : newLead.seats;
+                        setNewLead({ ...newLead, workspaceType: type, planType: plan, seats });
                       }}
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none"
                     >
@@ -1435,31 +1436,41 @@ const LeadsTracker = () => {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Seats Needed</label>
-                    <div className="flex items-center bg-background border border-borderSubtle rounded-xl overflow-hidden focus-within:border-primary transition-colors">
-                      <button 
-                        type="button"
-                        onClick={() => setNewLead({...newLead, seats: Math.max(0, (parseInt(newLead.seats) || 0) - 1).toString()})}
-                        className="px-3 py-3 hover:bg-white/5 text-textMuted hover:text-textMain transition-colors border-r border-borderSubtle"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <input 
-                        type="number" 
-                        onWheel={(e) => e.target.blur()} 
-                        placeholder="0"
-                        value={newLead.seats}
-                        onChange={(e) => setNewLead({...newLead, seats: e.target.value})}
-                        className="w-full bg-transparent px-4 py-3 text-sm text-textMain focus:outline-none text-center font-bold" 
-                      />
-                      <button 
-                        type="button"
-                        onClick={() => setNewLead({...newLead, seats: ((parseInt(newLead.seats) || 0) + 1).toString()})}
-                        className="px-3 py-3 hover:bg-white/5 text-textMuted hover:text-textMain transition-colors border-l border-borderSubtle"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                      Seats Needed {newLead.workspaceType === 'Individual Seat' && <span className="text-textMuted normal-case font-normal">(Fixed: 1)</span>}
+                    </label>
+                    {newLead.workspaceType === 'Individual Seat' ? (
+                      <div className="flex items-center bg-background/50 border border-borderSubtle rounded-xl overflow-hidden opacity-60 cursor-not-allowed">
+                        <div className="px-3 py-3 text-textMuted border-r border-borderSubtle"><Minus size={14} /></div>
+                        <div className="w-full px-4 py-3 text-sm text-textMain text-center font-bold">1</div>
+                        <div className="px-3 py-3 text-textMuted border-l border-borderSubtle"><Plus size={14} /></div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center bg-background border border-borderSubtle rounded-xl overflow-hidden focus-within:border-primary transition-colors">
+                        <button 
+                          type="button"
+                          onClick={() => setNewLead({...newLead, seats: Math.max(0, (parseInt(newLead.seats) || 0) - 1).toString()})}
+                          className="px-3 py-3 hover:bg-white/5 text-textMuted hover:text-textMain transition-colors border-r border-borderSubtle"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <input 
+                          type="number" 
+                          onWheel={(e) => e.target.blur()} 
+                          placeholder="0"
+                          value={newLead.seats}
+                          onChange={(e) => setNewLead({...newLead, seats: e.target.value})}
+                          className="w-full bg-transparent px-4 py-3 text-sm text-textMain focus:outline-none text-center font-bold" 
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setNewLead({...newLead, seats: ((parseInt(newLead.seats) || 0) + 1).toString()})}
+                          className="px-3 py-3 hover:bg-white/5 text-textMuted hover:text-textMain transition-colors border-l border-borderSubtle"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
