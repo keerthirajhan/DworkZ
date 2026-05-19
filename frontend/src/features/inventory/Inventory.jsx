@@ -301,26 +301,6 @@ const Inventory = () => {
                  <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
                        <span className="font-bold text-textMain">{item.vendorDetails}</span>
-                        {item.billCopyUrl && (
-                           <div className="flex items-center gap-1.5">
-                              <button 
-                                type="button"
-                                onClick={() => handleViewBill(item.billCopyUrl)}
-                                className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center cursor-pointer" 
-                                title="View Bill Copy"
-                              >
-                                 <Eye size={12} />
-                              </button>
-                              <a 
-                                href={item.billCopyUrl} 
-                                download={`Bill_${item.itemName.replace(/\s+/g, '_')}_${item.itemId || item._id.slice(-6)}`}
-                                className="p-1 text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-md transition-all flex items-center justify-center" 
-                                title="Download Bill Copy"
-                              >
-                                 <Download size={12} />
-                              </a>
-                           </div>
-                        )}
                     </div>
                     <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString()}</div>
                  </td>
