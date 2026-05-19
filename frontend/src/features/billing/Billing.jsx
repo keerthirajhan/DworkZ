@@ -321,26 +321,9 @@ const Billing = () => {
                               <div className="p-3 h-full"><p className="text-[9px] font-black uppercase text-gray-400">Dated</p><p className="font-black text-xs text-gray-800 mt-1">{new Date(selectedInvoice.dateGenerated).toLocaleDateString()}</p></div>
                            </div>
                            <div className="p-3 flex-1">
-                             <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
-                             <p className="font-black text-xs text-gray-800 mt-1">
-                               {(() => {
-                                 if (
-                                   selectedInvoice.visitorId || 
-                                   selectedInvoice.isGuest || 
-                                   selectedInvoice.status === 'Paid' || 
-                                   selectedInvoice.clientId?.planType === 'Daily' ||
-                                   selectedInvoice.billingPeriod?.toLowerCase().includes('onboarding') ||
-                                   selectedInvoice.billingPeriod?.toLowerCase().includes('one-time')
-                                 ) {
-                                   return "Paid in Full/One-Time";
-                                 }
-                                 const generated = new Date(selectedInvoice.dateGenerated);
-                                 const due = new Date(selectedInvoice.dueDate);
-                                 const diffDays = Math.ceil(Math.abs(due - generated) / (1000 * 60 * 60 * 24));
-                                 return `${diffDays} Days (Due: ${due.toLocaleDateString()})`;
-                               })()}
-                             </p>
-                           </div>
+                              <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
+                              <p className="font-black text-xs text-gray-800 mt-1">Paid in Full/One-Time</p>
+                            </div>
                         </div>
                       </div>
 
