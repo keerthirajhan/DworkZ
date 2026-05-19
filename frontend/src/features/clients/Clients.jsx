@@ -262,7 +262,7 @@ const Clients = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex gap-4 items-center">
+      <div className="flex justify-between items-center gap-4">
         <div className="relative flex-1 max-w-md group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-textMuted group-focus-within:text-primary transition-colors" size={18} />
           <input 
@@ -273,6 +273,12 @@ const Clients = () => {
             className="w-full bg-surface border border-borderSubtle text-sm rounded-2xl pl-12 pr-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all shadow-inner" 
           />
         </div>
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-primary hover:bg-primary/90 text-textMain px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/25 flex items-center gap-2"
+        >
+          <Plus size={16} /> Add Client
+        </button>
       </div>
 
       {/* Clients Table */}
@@ -323,8 +329,14 @@ const Clients = () => {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex flex-col">
-                        <span className="text-textMain font-medium text-sm">{client.workspaceType}</span>
-                        <span className="text-[10px] text-textMuted uppercase font-bold tracking-tighter mt-0.5">{client.workspaceDetails || 'Unassigned'}</span>
+                        {client.workspaceType === 'Virtual Office' ? (
+                          <span className="bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest w-max shadow-sm">
+                            🌐 Virtual Office
+                          </span>
+                        ) : (
+                          <span className="text-textMain font-medium text-sm">{client.workspaceType}</span>
+                        )}
+                        <span className="text-[10px] text-textMuted uppercase font-bold tracking-tighter mt-1">{client.workspaceDetails || 'Unassigned'}</span>
                       </div>
                     </td>
                     <td className="px-6 py-5">
