@@ -159,6 +159,28 @@ const Inventory = () => {
     }
   };
 
+  const handleViewBill = (billUrl) => {
+    if (!billUrl) return;
+    try {
+      const isPdf = billUrl.startsWith('data:application/pdf');
+      const win = window.open("");
+      if (win) {
+        win.document.write(
+          isPdf 
+            ? `<iframe width='100%' height='100%' style='border:0;top:0;left:0;bottom:0;right:0;position:fixed;' src='${billUrl}'></iframe>`
+            : `<div style='display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0f172a;margin:0;'><img src='${billUrl}' style='max-width:100%;max-height:100vh;object-fit:contain;' /></div>`
+        );
+        win.document.title = "View Bill Copy";
+        win.document.close();
+      } else {
+        showNotify('Popup blocked! Please allow popups to view the bill.', 'warning');
+      }
+    } catch (e) {
+      console.error(e);
+      showNotify('Failed to open document preview', 'error');
+    }
+  };
+
   const filteredItems = items.filter(i => i.itemName.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const isItemLowStock = (item) => {
@@ -281,15 +303,14 @@ const Inventory = () => {
                        <span className="font-bold text-textMain">{item.vendorDetails}</span>
                         {item.billCopyUrl && (
                            <div className="flex items-center gap-1.5">
-                              <a 
-                                href={item.billCopyUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center" 
+                              <button 
+                                type="button"
+                                onClick={() => handleViewBill(item.billCopyUrl)}
+                                className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center cursor-pointer" 
                                 title="View Bill Copy"
                               >
                                  <Eye size={12} />
-                              </a>
+                              </button>
                               <a 
                                 href={item.billCopyUrl} 
                                 download={`Bill_${item.itemName.replace(/\s+/g, '_')}_${item.itemId || item._id.slice(-6)}`}
@@ -451,14 +472,13 @@ const Inventory = () => {
                       </label>
                       {formData.billCopyUrl && (
                         <div className="flex flex-wrap gap-2 justify-end">
-                          <a
-                            href={formData.billCopyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 py-3 px-4 bg-primary/10 text-primary border border-primary/20 rounded-2xl hover:bg-primary hover:text-white transition-all text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5"
-                          >
-                            <Eye size={14} /> View
-                          </a>
+                          <button
+                             type="button"
+                             onClick={() => handleViewBill(formData.billCopyUrl)}
+                             className="flex-1 py-3 px-4 bg-primary/10 text-primary border border-primary/20 rounded-2xl hover:bg-primary hover:text-white transition-all text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5"
+                           >
+                             <Eye size={14} /> View
+                           </button>
                           <a
                             href={formData.billCopyUrl}
                             download={`Bill_${formData.itemName || 'Item'}`}
