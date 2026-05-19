@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+:root {
+  --color-background: #020813;
+  --color-surface: #0A121F;
+  --color-primary: #14B8A6;
+  --color-secondary: #2DD4BF;
+  --color-accent: #10B981;
+  --color-textMain: #FFFFFF;
+  --color-textMuted: #8E9BAE;
+  --color-borderSubtle: #162231;
+}
+
+[data-theme='light'] {
+  --color-background: #FFFFFF;
+  --color-surface: #F8FAFC;
+  --color-primary: #14B8A6;
+  --color-secondary: #1E293B;
+  --color-accent: #10B981;
+  --color-textMain: #0F172A;
+  --color-textMuted: #64748B;
+  --color-borderSubtle: #F1F5F9;
+}
+
+@theme {
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-textMain: var(--color-textMain);
+  --color-textMuted: var(--color-textMuted);
+  --color-borderSubtle: var(--color-borderSubtle);
+  --font-sans: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-textMain);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-borderSubtle);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-textMuted);
+}
+
+/* Teal Glow Utilities */
+.teal-glow {
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.15);
+}
+
+.teal-glow-hover:hover {
+  box-shadow: 0 0 30px rgba(20, 184, 166, 0.25);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+[data-theme='light'] .text-gradient-teal {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: var(--color-textMain);
+  color: var(--color-textMain);
+}
+
+.text-gradient-teal {
+  background: linear-gradient(to right, #ffffff, var(--color-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glassmorphism Utilities */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+[data-theme='dark'] .glass-surface {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-badge {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(20, 184, 166, 0.15);
+}
+
+[data-theme='dark'] .glass-badge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(20, 184, 166, 0.25);
+}
+
+.timeline-track {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+[data-theme='dark'] .timeline-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Hide Number Input Spinners */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Date Input: Calendar icon & text color — theme-aware */
+input[type="date"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+  cursor: pointer;
+  opacity: 0.8;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  filter: brightness(0) invert(1) drop-shadow(0 0 4px rgba(20,184,166,0.8));
+}
+
+/* Light theme: force icon to dark/black */
+[data-theme='light'] input[type="date"] {
+  color-scheme: light;
+}
+[data-theme='light'] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0);
+  opacity: 0.5;
+}
+[data-theme='light'] input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+  filter: brightness(0);
+}
