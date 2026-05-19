@@ -28,7 +28,7 @@ exports.getInvoices = async (req, res) => {
     const invoices = await Invoice.find({ isArchived: { $ne: true } }).sort('-dateGenerated')
       .populate({
         path: 'clientId',
-        select: 'companyName name contactEmail contactPhone billingDetails planType'
+        select: 'companyName name contactEmail contactPhone billingDetails planType workspaceType'
       })
       .populate('bookingId')
       .populate('visitorId');
@@ -42,7 +42,7 @@ exports.getArchivedInvoices = async (req, res) => {
     const invoices = await Invoice.find({ isArchived: true }).sort('-archivedAt')
       .populate({
         path: 'clientId',
-        select: 'companyName name contactEmail contactPhone billingDetails planType'
+        select: 'companyName name contactEmail contactPhone billingDetails planType workspaceType'
       })
       .populate('bookingId')
       .populate('visitorId');
