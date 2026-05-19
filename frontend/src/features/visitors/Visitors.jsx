@@ -148,11 +148,19 @@ const Visitors = () => {
     }
 
     try {
-      await api.post('/api/v1/visitors/kiosk-send-otp', {
+      const res = await api.post('/api/v1/visitors/kiosk-send-otp', {
         email: formData.email
       });
       setOtpSent(true);
-      setNotification({ type: 'success', message: 'OTP has been sent to your email!' });
+      if (res.data.devOtp) {
+        setFormData(prev => ({ ...prev, otp: res.data.devOtp }));
+        setNotification({ 
+          type: 'success', 
+          message: `OTP Generated! (Dev Mode Bypass: Automatically filled OTP for you: ${res.data.devOtp})` 
+        });
+      } else {
+        setNotification({ type: 'success', message: 'OTP has been sent to your email!' });
+      }
     } catch (err) {
       setNotification({ type: 'error', message: 'Error sending OTP: ' + (err.response?.data?.error || err.message) });
     }

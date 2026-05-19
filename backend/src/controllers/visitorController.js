@@ -53,6 +53,14 @@ exports.sendOTP = async (req, res) => {
   } catch (err) {
     console.error(`\x1b[31m[OTP ERROR]\x1b[0m Failed to process for ${email}:`);
     console.error(err.stack || err.message);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`\x1b[33m[DEVELOPMENT BYPASS]\x1b[0m SMTP is not configured. OTP printed here: \x1b[36m${otp}\x1b[0m`);
+      return res.status(200).json({ 
+        success: true, 
+        message: 'OTP generated (Dev Mode Bypass: Check backend terminal/console for OTP!)',
+        devOtp: otp 
+      });
+    }
     return res.status(500).json({ 
       success: false, 
       error: 'Could not send verification email.',
