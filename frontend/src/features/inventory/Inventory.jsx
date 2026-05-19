@@ -279,17 +279,27 @@ const Inventory = () => {
                  <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
                        <span className="font-bold text-textMain">{item.vendorDetails}</span>
-                       {item.billCopyUrl && (
-                          <a 
-                            href={item.billCopyUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center" 
-                            title="View Bill Copy"
-                          >
-                             <Eye size={12} />
-                          </a>
-                       )}
+                        {item.billCopyUrl && (
+                           <div className="flex items-center gap-1.5">
+                              <a 
+                                href={item.billCopyUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center" 
+                                title="View Bill Copy"
+                              >
+                                 <Eye size={12} />
+                              </a>
+                              <a 
+                                href={item.billCopyUrl} 
+                                download={`Bill_${item.itemName.replace(/\s+/g, '_')}_${item.itemId || item._id.slice(-6)}`}
+                                className="p-1 text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-md transition-all flex items-center justify-center" 
+                                title="Download Bill Copy"
+                              >
+                                 <Download size={12} />
+                              </a>
+                           </div>
+                        )}
                     </div>
                     <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString()}</div>
                  </td>
@@ -417,39 +427,56 @@ const Inventory = () => {
                 </div>
 
                 <div className="space-y-2 bg-background/50 border border-borderSubtle p-6 rounded-3xl">
-                   <label className="text-[10px] font-black uppercase text-textMuted tracking-widest ml-1">Upload Bill Copy (Optional)</label>
-                   <div className="flex items-center gap-4">
-                     <label className="flex-1 flex flex-col items-center justify-center border border-dashed border-borderSubtle hover:border-primary rounded-2xl p-4 cursor-pointer transition-colors bg-background/20 group">
-                       <span className="text-xs text-textMuted group-hover:text-primary font-bold transition-colors">
-                         {formData.billCopyUrl ? '📄 Bill Uploaded (Click to change)' : '📁 Choose Bill PDF or Image'}
-                       </span>
-                       <input 
-                         type="file" 
-                         accept="image/*,application/pdf" 
-                         className="hidden" 
-                         onChange={(e) => {
-                           const file = e.target.files[0];
-                           if (file) {
-                             const reader = new FileReader();
-                             reader.onloadend = () => {
-                               setFormData({ ...formData, billCopyUrl: reader.result });
-                             };
-                             reader.readAsDataURL(file);
-                           }
-                         }} 
-                       />
-                     </label>
-                     {formData.billCopyUrl && (
-                       <button
-                         type="button"
-                         onClick={() => setFormData({ ...formData, billCopyUrl: '' })}
-                         className="p-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white transition-all text-xs font-black uppercase tracking-wider"
-                       >
-                         Remove
-                       </button>
-                     )}
-                   </div>
-                 </div>
+                    <label className="text-[10px] font-black uppercase text-textMuted tracking-widest ml-1">Upload Bill Copy (Optional)</label>
+                    <div className="flex flex-col gap-4">
+                      <label className="flex flex-col items-center justify-center border border-dashed border-borderSubtle hover:border-primary rounded-2xl p-4 cursor-pointer transition-colors bg-background/20 group">
+                        <span className="text-xs text-textMuted group-hover:text-primary font-bold transition-colors">
+                          {formData.billCopyUrl ? '📄 Bill Uploaded (Click to change)' : '📁 Choose Bill PDF or Image'}
+                        </span>
+                        <input 
+                          type="file" 
+                          accept="image/*,application/pdf" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setFormData({ ...formData, billCopyUrl: reader.result });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }} 
+                        />
+                      </label>
+                      {formData.billCopyUrl && (
+                        <div className="flex flex-wrap gap-2 justify-end">
+                          <a
+                            href={formData.billCopyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-3 px-4 bg-primary/10 text-primary border border-primary/20 rounded-2xl hover:bg-primary hover:text-white transition-all text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5"
+                          >
+                            <Eye size={14} /> View
+                          </a>
+                          <a
+                            href={formData.billCopyUrl}
+                            download={`Bill_${formData.itemName || 'Item'}`}
+                            className="flex-1 py-3 px-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-2xl hover:bg-emerald-500 hover:text-white transition-all text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5"
+                          >
+                            <Download size={14} /> Download
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, billCopyUrl: '' })}
+                            className="py-3 px-4 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white transition-all text-xs font-black uppercase tracking-wider text-center flex items-center justify-center gap-1.5"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                 <div className="pt-6 flex justify-end gap-4">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-textMuted hover:text-textMain transition-colors">Cancel</button>
