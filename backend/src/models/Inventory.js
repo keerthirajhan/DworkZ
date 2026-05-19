@@ -10,6 +10,7 @@ const InventorySchema = new mongoose.Schema({
   purchaseDate: { type: Date, default: Date.now },
   paymentStatus: { type: String, enum: ['Paid', 'Credit'], required: true },
   paymentMethod: { type: String, enum: ['Cash', 'GPay', 'Bank Transfer', 'N/A'], default: 'N/A' },
+  billCopyUrl: { type: String },
   addedBy: { type: mongoose.Schema.ObjectId, ref: 'User' },
   isArchived: { type: Boolean, default: false },
   archivedAt: { type: Date },

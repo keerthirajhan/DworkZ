@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Package, CreditCard, ArrowDownToLine, Trash2, Edit3, CheckCircle, AlertTriangle, X, ShieldAlert, Printer } from 'lucide-react';
+import { Search, Plus, Package, CreditCard, ArrowDownToLine, Trash2, Edit3, CheckCircle, AlertTriangle, X, ShieldAlert, Printer, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
@@ -24,7 +24,8 @@ const Inventory = () => {
     vendorDetails: '',
     purchaseDate: new Date().toISOString().split('T')[0],
     paymentStatus: 'Paid',
-    paymentMethod: 'Cash'
+    paymentMethod: 'Cash',
+    billCopyUrl: ''
   });
 
   const [notification, setNotification] = useState(null);
@@ -89,7 +90,8 @@ const Inventory = () => {
         vendorDetails: item.vendorDetails,
         purchaseDate: new Date(item.purchaseDate).toISOString().split('T')[0],
         paymentStatus: item.paymentStatus,
-        paymentMethod: item.paymentMethod || 'N/A'
+        paymentMethod: item.paymentMethod || 'N/A',
+        billCopyUrl: item.billCopyUrl || ''
       });
     } else {
       setSelectedItem(null);
@@ -101,7 +103,8 @@ const Inventory = () => {
         vendorDetails: '',
         purchaseDate: new Date().toISOString().split('T')[0],
         paymentStatus: 'Paid',
-        paymentMethod: 'Cash'
+        paymentMethod: 'Cash',
+        billCopyUrl: ''
       });
     }
     setIsModalOpen(true);
@@ -158,8 +161,13 @@ const Inventory = () => {
 
   const filteredItems = items.filter(i => i.itemName.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  const isItemLowStock = (item) => {
+    if (item.purchasedQuantity <= 0) return false;
+    return (item.inHandQuantity / item.purchasedQuantity) <= 0.25;
+  };
+
   const totalItemsCount = items.length;
-  const lowStockCount = items.filter(i => i.inHandQuantity < 5).length;
+  const lowStockCount = items.filter(isItemLowStock).length;
   const pendingPayments = items.filter(i => i.paymentStatus === 'Credit').reduce((acc, curr) => acc + Number(curr.totalCost || (curr.unitPrice * curr.purchasedQuantity) || 0), 0);
 
   return (
@@ -256,22 +264,35 @@ const Inventory = () => {
                 <td className="px-8 py-6">
                    <div className="flex flex-col gap-1.5">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-1">
-                         <span className={item.inHandQuantity < 5 ? 'text-orange-400' : 'text-textMuted'}>Availability</span>
+                         <span className={isItemLowStock(item) ? 'text-orange-400' : 'text-textMuted'}>Availability</span>
                          <span className="text-textMain">{item.purchasedQuantity > 0 ? Math.round((item.inHandQuantity / item.purchasedQuantity) * 100) : 0}%</span>
                       </div>
                       <div className="w-32 h-1.5 bg-background rounded-full overflow-hidden border border-borderSubtle">
                          <div 
-                           className={`h-full rounded-full transition-all duration-1000 ${item.inHandQuantity < 5 ? 'bg-orange-500' : 'bg-primary'}`} 
+                           className={`h-full rounded-full transition-all duration-1000 ${isItemLowStock(item) ? 'bg-orange-500' : 'bg-primary'}`} 
                            style={{ width: `${item.purchasedQuantity > 0 ? (item.inHandQuantity / item.purchasedQuantity) * 100 : 0}%` }}
                          ></div>
                       </div>
                       <div className="text-[10px] font-black text-textMuted mt-1 uppercase tracking-widest">{item.inHandQuantity} / {item.purchasedQuantity} UNITS</div>
                    </div>
                 </td>
-                <td className="px-8 py-6">
-                   <div className="font-bold text-textMain">{item.vendorDetails}</div>
-                   <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString()}</div>
-                </td>
+                 <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                       <span className="font-bold text-textMain">{item.vendorDetails}</span>
+                       {item.billCopyUrl && (
+                          <a 
+                            href={item.billCopyUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="p-1 text-primary hover:text-white bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-all flex items-center justify-center" 
+                            title="View Bill Copy"
+                          >
+                             <Eye size={12} />
+                          </a>
+                       )}
+                    </div>
+                    <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString()}</div>
+                 </td>
                 <td className="px-8 py-6">
                   <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${item.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
                     {item.paymentStatus} {item.paymentMethod !== 'N/A' ? `(${item.paymentMethod})` : ''}
@@ -394,6 +415,41 @@ const Inventory = () => {
                      </motion.div>
                    )}
                 </div>
+
+                <div className="space-y-2 bg-background/50 border border-borderSubtle p-6 rounded-3xl">
+                   <label className="text-[10px] font-black uppercase text-textMuted tracking-widest ml-1">Upload Bill Copy (Optional)</label>
+                   <div className="flex items-center gap-4">
+                     <label className="flex-1 flex flex-col items-center justify-center border border-dashed border-borderSubtle hover:border-primary rounded-2xl p-4 cursor-pointer transition-colors bg-background/20 group">
+                       <span className="text-xs text-textMuted group-hover:text-primary font-bold transition-colors">
+                         {formData.billCopyUrl ? '📄 Bill Uploaded (Click to change)' : '📁 Choose Bill PDF or Image'}
+                       </span>
+                       <input 
+                         type="file" 
+                         accept="image/*,application/pdf" 
+                         className="hidden" 
+                         onChange={(e) => {
+                           const file = e.target.files[0];
+                           if (file) {
+                             const reader = new FileReader();
+                             reader.onloadend = () => {
+                               setFormData({ ...formData, billCopyUrl: reader.result });
+                             };
+                             reader.readAsDataURL(file);
+                           }
+                         }} 
+                       />
+                     </label>
+                     {formData.billCopyUrl && (
+                       <button
+                         type="button"
+                         onClick={() => setFormData({ ...formData, billCopyUrl: '' })}
+                         className="p-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white transition-all text-xs font-black uppercase tracking-wider"
+                       >
+                         Remove
+                       </button>
+                     )}
+                   </div>
+                 </div>
 
                 <div className="pt-6 flex justify-end gap-4">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-textMuted hover:text-textMain transition-colors">Cancel</button>

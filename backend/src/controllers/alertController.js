@@ -113,9 +113,10 @@ exports.getSmartAlerts = async (req, res, next) => {
     });
 
     // 5. Low Stock Alerts
-    const lowStockItems = await Inventory.find({
-      isArchived: { $ne: true },
-      inHandQuantity: { $lt: 5 }
+    const activeInventoryItems = await Inventory.find({ isArchived: { $ne: true } });
+    const lowStockItems = activeInventoryItems.filter(item => {
+      if (item.purchasedQuantity <= 0) return false;
+      return (item.inHandQuantity / item.purchasedQuantity) <= 0.25;
     });
 
     lowStockItems.forEach(item => {
