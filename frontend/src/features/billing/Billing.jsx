@@ -316,14 +316,16 @@ const Billing = () => {
                            <div className="text-[10px] leading-relaxed text-gray-600 font-bold">14/71, East TV Swamy Road<br/>Subramaniya Puram Road, R S Puram<br/>Coimbatore, Tamil Nadu<br/>PIN Code: 641002<br/>Email: info.dworkzcbe@gmail.com<br/>GSTIN: 33AAZFD3031H1ZG</div>
                         </div>
                         <div className="flex flex-col h-full">
-                           <div className="grid grid-cols-2 border-b border-black flex-1">
+                           <div className={`grid grid-cols-2 flex-1 ${!['Individual Seat', 'Cabin'].includes(selectedInvoice.clientId?.workspaceType) ? 'border-b border-black' : 'h-full items-center'}`}>
                               <div className="p-3 border-r border-black h-full"><p className="text-[9px] font-black uppercase text-gray-400">Invoice No.</p><p className="font-black text-xs text-gray-800 mt-1">{selectedInvoice.invoiceId}</p></div>
                               <div className="p-3 h-full"><p className="text-[9px] font-black uppercase text-gray-400">Dated</p><p className="font-black text-xs text-gray-800 mt-1">{new Date(selectedInvoice.dateGenerated).toLocaleDateString()}</p></div>
                            </div>
-                           <div className="p-3 flex-1">
-                              <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
-                              <p className="font-black text-xs text-gray-800 mt-1">Due on Receipt</p>
-                            </div>
+                           {!['Individual Seat', 'Cabin'].includes(selectedInvoice.clientId?.workspaceType) && (
+                             <div className="p-3 flex-1">
+                                <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
+                                <p className="font-black text-xs text-gray-800 mt-1">Paid in Full/One-Time</p>
+                              </div>
+                           )}
                         </div>
                       </div>
 
