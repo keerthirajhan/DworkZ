@@ -322,7 +322,7 @@ const Billing = () => {
                            </div>
                            <div className="p-3 flex-1">
                               <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
-                              <p className="font-black text-xs text-gray-800 mt-1">Paid in Full/One-Time</p>
+                              <p className="font-black text-xs text-gray-800 mt-1">Due on Receipt</p>
                             </div>
                         </div>
                       </div>
@@ -363,7 +363,7 @@ const Billing = () => {
                                   <td className="p-4 border-r border-black text-center">1</td>
                                   <td className="p-4 border-r border-black">
                                     <div className="font-black text-gray-800 text-xs mb-1">
-                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
+                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : 'Rent Income-Space'}
                                     </div>
                                     <div className="text-[9px] italic text-gray-400">
                                       {(() => {
@@ -376,33 +376,7 @@ const Billing = () => {
                                         if (plan === 'Daily') {
                                           return "";
                                         }
-                                        if (plan === 'Yearly') {
-                                          try {
-                                            const parts = selectedInvoice.billingPeriod.split(' ');
-                                            if (parts.length === 2) {
-                                              const startMonth = parts[0];
-                                              const startYear = parseInt(parts[1]);
-                                              const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                                              const monthIndex = months.findIndex(m => m.toLowerCase().startsWith(startMonth.toLowerCase()));
-                                              
-                                              if (monthIndex !== -1) {
-                                                const startDate = new Date(startYear, monthIndex, 1);
-                                                const endDate = new Date(startDate.getFullYear() + 1, startDate.getMonth() - 1, 1);
-                                                
-                                                const formatMonthYear = (date) => {
-                                                  const m = months[date.getMonth()];
-                                                  const y = date.getFullYear().toString().slice(-2);
-                                                  return `${m} ${y}`;
-                                                };
-                                                
-                                                return `Annual workspace rental charges for ${formatMonthYear(startDate)} to ${formatMonthYear(endDate)}`;
-                                              }
-                                            }
-                                          } catch (e) {
-                                            console.error("Error formatting yearly period:", e);
-                                          }
-                                          return `Annual workspace rental charges for ${selectedInvoice.billingPeriod}`;
-                                        }
+
                                         return `Monthly Workspace Rental Charges for ${selectedInvoice.billingPeriod}`;
                                       })()}
                                     </div>
