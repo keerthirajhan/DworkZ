@@ -1417,13 +1417,15 @@ const LeadsTracker = () => {
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Workspace Preference</label>
                     <select 
                       value={newLead.workspaceType}
-                      onChange={(e) => setNewLead({...newLead, workspaceType: e.target.value})}
+                      onChange={(e) => {
+                        const type = e.target.value;
+                        const plan = type === 'Cabin' ? 'Yearly' : 'Monthly';
+                        setNewLead({ ...newLead, workspaceType: type, planType: plan });
+                      }}
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none"
                     >
                       <option value="Individual Seat">Individual Seat</option>
                       <option value="Cabin">Cabin</option>
-                      <option value="Virtual Office">Virtual Office</option>
-                      <option value="Custom">Custom</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
@@ -1461,12 +1463,13 @@ const LeadsTracker = () => {
                     <select 
                       value={newLead.planType}
                       onChange={(e) => setNewLead({...newLead, planType: e.target.value})}
-                      className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none"
+                      className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none font-bold text-primary"
                     >
-                      <option value="Daily">Daily</option>
-                      <option value="Weekly">Weekly</option>
-                      <option value="Monthly">Monthly</option>
-                      {newLead.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
+                      {newLead.workspaceType === 'Cabin' ? (
+                        <option value="Yearly">Yearly (Locked)</option>
+                      ) : (
+                        <option value="Monthly">Monthly (Locked)</option>
+                      )}
                     </select>
                   </div>
                 </div>
