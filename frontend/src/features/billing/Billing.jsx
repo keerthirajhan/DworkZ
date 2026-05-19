@@ -341,56 +341,83 @@ const Billing = () => {
                       <table className="w-full text-left text-[10px] border-b border-black">
                          <thead><tr className="font-black uppercase tracking-widest text-center border-b border-black"><td className="p-2 border-r border-black w-12 whitespace-nowrap">S.No.</td><td className="p-2 border-r border-black">Particulars</td><td className="p-2 border-r border-black w-32">Type</td><td className="p-2 border-r border-black w-32">Rate</td><td className="p-2 w-32">Amount</td></tr></thead>
                         <tbody className="font-bold text-gray-700">
-                          <tr className="h-40 align-top">
-                            <td className="p-4 border-r border-black text-center">1</td>
-                            <td className="p-4 border-r border-black">
-                              <div className="font-black text-gray-800 text-xs mb-1">
-                                {selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
-                              </div>
-                              <div className="text-[9px] italic text-gray-400">
-                                {(() => {
-                                  if (selectedInvoice.isGuest) {
-                                    return 'One-time session reservation';
-                                  }
-                                  const plan = selectedInvoice.clientId?.planType || 'Monthly';
-                                  if (plan === 'Daily') {
-                                    return "";
-                                  }
-                                  if (plan === 'Yearly') {
-                                    try {
-                                      const parts = selectedInvoice.billingPeriod.split(' ');
-                                      if (parts.length === 2) {
-                                        const startMonth = parts[0];
-                                        const startYear = parseInt(parts[1]);
-                                        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                                        const monthIndex = months.findIndex(m => m.toLowerCase().startsWith(startMonth.toLowerCase()));
-                                        
-                                        if (monthIndex !== -1) {
-                                          const startDate = new Date(startYear, monthIndex, 1);
-                                          const endDate = new Date(startDate.getFullYear() + 1, startDate.getMonth() - 1, 1);
-                                          
-                                          const formatMonthYear = (date) => {
-                                            const m = months[date.getMonth()];
-                                            const y = date.getFullYear().toString().slice(-2);
-                                            return `${m} ${y}`;
-                                          };
-                                          
-                                          return `Annual workspace rental charges for ${formatMonthYear(startDate)} to ${formatMonthYear(endDate)}`;
+                          {(() => {
+                            const plan = selectedInvoice.clientId?.planType || 'Monthly';
+                            const baseAmt = Number(selectedInvoice.baseAmount) || 0;
+                            
+                            if (plan === 'Daily' && baseAmt > 450) {
+                              const numDays = Math.round(baseAmt / 450);
+                              const rows = [];
+                              for (let i = 1; i <= numDays; i++) {
+                                rows.push(
+                                  <tr key={`day-${i}`} className="align-top border-b border-black/10">
+                                    <td className="p-4 border-r border-black text-center">{i}</td>
+                                    <td className="p-4 border-r border-black">
+                                      <div className="font-black text-gray-800 text-xs">
+                                        {`Day pass rental charges - Day ${i}`}
+                                      </div>
+                                    </td>
+                                    <td className="p-4 border-r border-black text-center">Rental</td>
+                                    <td className="p-4 border-r border-black text-right">₹450</td>
+                                    <td className="p-4 text-right">₹450</td>
+                                  </tr>
+                                );
+                              }
+                              return rows;
+                            } else {
+                              return (
+                                <tr className="h-40 align-top">
+                                  <td className="p-4 border-r border-black text-center">1</td>
+                                  <td className="p-4 border-r border-black">
+                                    <div className="font-black text-gray-800 text-xs mb-1">
+                                      {selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
+                                    </div>
+                                    <div className="text-[9px] italic text-gray-400">
+                                      {(() => {
+                                        if (selectedInvoice.isGuest) {
+                                          return 'One-time session reservation';
                                         }
-                                      }
-                                    } catch (e) {
-                                      console.error("Error formatting yearly period:", e);
-                                    }
-                                    return `Annual workspace rental charges for ${selectedInvoice.billingPeriod}`;
-                                  }
-                                  return `Monthly Workspace Rental Charges for ${selectedInvoice.billingPeriod}`;
-                                })()}
-                              </div>
-                            </td>
-                            <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest ? 'Service' : 'Rental'}</td>
-                            <td className="p-4 border-r border-black text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
-                            <td className="p-4 text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
-                          </tr>
+                                        if (plan === 'Daily') {
+                                          return "";
+                                        }
+                                        if (plan === 'Yearly') {
+                                          try {
+                                            const parts = selectedInvoice.billingPeriod.split(' ');
+                                            if (parts.length === 2) {
+                                              const startMonth = parts[0];
+                                              const startYear = parseInt(parts[1]);
+                                              const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                                              const monthIndex = months.findIndex(m => m.toLowerCase().startsWith(startMonth.toLowerCase()));
+                                              
+                                              if (monthIndex !== -1) {
+                                                const startDate = new Date(startYear, monthIndex, 1);
+                                                const endDate = new Date(startDate.getFullYear() + 1, startDate.getMonth() - 1, 1);
+                                                
+                                                const formatMonthYear = (date) => {
+                                                  const m = months[date.getMonth()];
+                                                  const y = date.getFullYear().toString().slice(-2);
+                                                  return `${m} ${y}`;
+                                                };
+                                                
+                                                return `Annual workspace rental charges for ${formatMonthYear(startDate)} to ${formatMonthYear(endDate)}`;
+                                              }
+                                            }
+                                          } catch (e) {
+                                            console.error("Error formatting yearly period:", e);
+                                          }
+                                          return `Annual workspace rental charges for ${selectedInvoice.billingPeriod}`;
+                                        }
+                                        return `Monthly Workspace Rental Charges for ${selectedInvoice.billingPeriod}`;
+                                      })()}
+                                    </div>
+                                  </td>
+                                  <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest ? 'Service' : 'Rental'}</td>
+                                  <td className="p-4 border-r border-black text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
+                                  <td className="p-4 text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
+                                </tr>
+                              );
+                            }
+                          })()}
                           {selectedInvoice.overageAmount > 0 && (
                             <tr><td className="p-4 border-r border-black text-center">2</td><td className="p-4 border-r border-black"><div className="font-black text-gray-800 text-xs mb-1">Utilization Overage</div><div className="text-[9px] italic text-gray-400">Meeting Room Usage Beyond Quota</div></td><td className="p-4 border-r border-black text-center">Service</td><td className="p-4 border-r border-black text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td><td className="p-4 text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td></tr>
                           )}
