@@ -14,6 +14,20 @@ const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/dworkz');
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+    // Auto-migrate existing inventory items without itemId
+    const Inventory = require('./models/Inventory');
+    const unindexedItems = await Inventory.find({ itemId: { $exists: false } }).sort('createdAt');
+    if (unindexedItems.length > 0) {
+      console.log(`Migrating ${unindexedItems.length} inventory items to have sequential itemIds...`);
+      for (let i = 0; i < unindexedItems.length; i++) {
+        const item = unindexedItems[i];
+        const existingCount = await Inventory.countDocuments({ itemId: { $exists: true } });
+        item.itemId = `INV-${String(existingCount + 1).padStart(4, '0')}`;
+        await item.save();
+      }
+      console.log('Migration complete!');
+    }
   } catch (err) {
     console.error(`Error: ${err.message}`);
     process.exit(1);

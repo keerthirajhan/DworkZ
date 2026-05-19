@@ -38,6 +38,9 @@ exports.addInventoryItem = async (req, res) => {
   try {
     req.body.addedBy = req.user.id;
     
+    const count = await Inventory.countDocuments();
+    req.body.itemId = `INV-${String(count + 1).padStart(4, '0')}`;
+    
     if (req.body.purchasedQuantity && req.body.totalCost) {
       req.body.unitPrice = req.body.totalCost / req.body.purchasedQuantity;
     } else if (req.body.purchasedQuantity && req.body.unitPrice) {

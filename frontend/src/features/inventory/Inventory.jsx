@@ -256,7 +256,7 @@ const Inventory = () => {
                 <td className="px-8 py-6">
                    <div className="font-bold text-textMain text-base">{item.itemName}</div>
                    <div className="flex gap-2 items-center mt-0.5">
-                      <span className="text-[10px] uppercase font-black text-textMuted tracking-widest">ID: {item._id.slice(-6)}</span>
+                      <span className="text-[10px] uppercase font-black text-textMuted tracking-widest">ID: {item.itemId || item._id.slice(-6)}</span>
                       <span className="w-1 h-1 bg-textMuted/30 rounded-full"></span>
                       <span className="text-[10px] uppercase font-black text-primary tracking-widest font-bold">Total: ₹{Number(item.totalCost || (item.unitPrice * item.purchasedQuantity) || 0).toLocaleString()}</span>
                    </div>
@@ -498,7 +498,7 @@ const Inventory = () => {
             <div className="border-2 border-black p-8 rounded-2xl relative">
                <div className="absolute top-8 right-8 text-right">
                   <div className="text-3xl font-black uppercase tracking-tight">ASSET VOUCHER</div>
-                  <div className="text-sm font-bold mt-1 tracking-widest text-gray-500">ID: {selectedItemForPrint._id.slice(-6)}</div>
+                  <div className="text-sm font-bold mt-1 tracking-widest text-gray-500">ID: {selectedItemForPrint.itemId || selectedItemForPrint._id.slice(-6)}</div>
                </div>
                
                <div className="mb-12">
