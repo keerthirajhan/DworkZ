@@ -32,6 +32,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  resetOtp: {
+    type: String,
+    select: false
+  },
+  resetOtpExpire: {
+    type: Date,
+    select: false
+  },
   refreshToken: {
     type: String,
     select: false
