@@ -284,6 +284,12 @@ const Billing = () => {
       {/* Professional Tax Invoice Preview Modal */}
       <AnimatePresence>
         {showPreview && selectedInvoice && (() => {
+          const baseAmt = Number(selectedInvoice.baseAmount) || 0;
+          const overageAmt = Number(selectedInvoice.overageAmount) || 0;
+          const subTotal = baseAmt + overageAmt;
+          const cgstAmt = Number((subTotal * 0.09).toFixed(2));
+          const sgstAmt = Number((subTotal * 0.09).toFixed(2));
+          const totalAmt = Number((subTotal + cgstAmt + sgstAmt).toFixed(2));
           return (
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
                <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-[32px] w-full max-w-4xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
@@ -311,7 +317,7 @@ const Billing = () => {
                              <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
                              <p className="font-black text-xs text-gray-800 mt-1">
                                {(() => {
-                                 if (selectedInvoice.status === 'Paid') {
+                                 if (selectedInvoice.status === 'Paid' || selectedInvoice.clientId?.planType === 'Daily') {
                                    return "Paid in Full / One-Time";
                                  }
                                  const generated = new Date(selectedInvoice.dateGenerated);
@@ -339,7 +345,7 @@ const Billing = () => {
                             <td className="p-4 border-r border-black text-center">1</td>
                             <td className="p-4 border-r border-black">
                               <div className="font-black text-gray-800 text-xs mb-1">
-                                {selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
+                                {selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
                               </div>
                               <div className="text-[9px] italic text-gray-400">
                                 {(() => {
@@ -348,7 +354,7 @@ const Billing = () => {
                                   }
                                   const plan = selectedInvoice.clientId?.planType || 'Monthly';
                                   if (plan === 'Daily') {
-                                    return `Day pass rental charges for ${selectedInvoice.billingPeriod}`;
+                                    return "";
                                   }
                                   if (plan === 'Yearly') {
                                     try {
@@ -388,16 +394,16 @@ const Billing = () => {
                           {selectedInvoice.overageAmount > 0 && (
                             <tr><td className="p-4 border-r border-black text-center">2</td><td className="p-4 border-r border-black"><div className="font-black text-gray-800 text-xs mb-1">Utilization Overage</div><div className="text-[9px] italic text-gray-400">Meeting Room Usage Beyond Quota</div></td><td className="p-4 border-r border-black text-center">Service</td><td className="p-4 border-r border-black text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td><td className="p-4 text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td></tr>
                           )}
-                          {selectedInvoice.cgstAmount > 0 && (
-                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: CGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.cgstAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
+                          {cgstAmt > 0 && (
+                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: CGST @ 9%</td><td className="p-2 text-right">₹{cgstAmt.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                           )}
-                          {selectedInvoice.sgstAmount > 0 && (
-                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: SGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.sgstAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
+                          {sgstAmt > 0 && (
+                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: SGST @ 9%</td><td className="p-2 text-right">₹{sgstAmt.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                           )}
-                          <tr className="border-t border-black font-black text-xs"><td colSpan={4} className="p-3 border-r border-black text-right uppercase tracking-widest">Total Amount</td><td className="p-3 text-right text-base text-[#00bfa5]">₹{selectedInvoice.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
+                          <tr className="border-t border-black font-black text-xs"><td colSpan={4} className="p-3 border-r border-black text-right uppercase tracking-widest">Total Amount</td><td className="p-3 text-right text-base text-[#00bfa5]">₹{totalAmt.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                         </tbody>
                       </table>
-                      <div className="p-4 border-b border-black"><p className="text-[9px] font-black uppercase text-gray-400 mb-1">Amount Chargeable (in words)</p><p className="font-black text-xs text-gray-800 uppercase">{numberToWords(selectedInvoice.totalAmount)}</p></div>
+                      <div className="p-4 border-b border-black"><p className="text-[9px] font-black uppercase text-gray-400 mb-1">Amount Chargeable (in words)</p><p className="font-black text-xs text-gray-800 uppercase">{numberToWords(totalAmt)}</p></div>
                       <div className="grid grid-cols-2">
                         <div className="p-4 border-r border-black space-y-1"><p className="text-[9px] font-black uppercase text-gray-400 mb-2">Company's Bank Details</p><p className="text-[10px] font-bold text-gray-700">A/c Holder: <span className="font-black text-gray-900">DworkZ</span></p><p className="text-[10px] font-bold text-gray-700">A/c No.: <span className="font-black text-gray-900">50200118437552</span></p><p className="text-[10px] font-bold text-gray-700">A/c Type: <span className="font-black text-gray-900">Current Account</span></p><p className="text-[10px] font-bold text-gray-700">IFS Code: <span className="font-black text-gray-900">HDFC0005651</span></p><p className="text-[10px] font-bold text-gray-700">Branch: <span className="font-black text-gray-900">EAST SAMBANDHAM ROAD R S PURAM</span></p></div>
                         <div className="p-4 text-right flex flex-col justify-between"><p className="text-[10px] font-black uppercase text-gray-400">for DworkZ</p><div className="space-y-1"><div className="w-16 h-8 bg-[#00bfa5]/10 rounded ml-auto flex items-center justify-center"><CheckCircle size={20} className="text-[#00bfa5]" /></div><p className="font-black text-[10px] uppercase text-gray-800 tracking-widest">Authorised Signatory</p></div></div>
