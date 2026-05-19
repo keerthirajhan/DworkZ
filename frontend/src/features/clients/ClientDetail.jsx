@@ -1373,8 +1373,6 @@ const ClientDetail = () => {
                         ) : (
                           <>
                             <option value="Monthly">Monthly</option>
-                            <option value="Daily">Daily</option>
-                            <option value="Weekly">Weekly</option>
                             {editFormData.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
                           </>
                         )}
@@ -1438,8 +1436,6 @@ const ClientDetail = () => {
                       <option value="Yearly">Yearly (Locked)</option>
                     ) : (
                       <>
-                        <option value="Hourly">Hourly</option>
-                        <option value="Daily">Daily</option>
                         <option value="Monthly">Monthly</option>
                         {client?.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
                       </>
@@ -1517,8 +1513,6 @@ const ClientDetail = () => {
                     <select value={upgradeForm.planType} onChange={e => setUpgradeForm({...upgradeForm, planType: e.target.value})}
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none">
                       <option value="Monthly">Monthly</option>
-                      <option value="Daily">Daily</option>
-                      <option value="Weekly">Weekly</option>
                       {client?.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
                     </select>
                   </div>

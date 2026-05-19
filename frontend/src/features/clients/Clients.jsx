@@ -548,8 +548,6 @@ const Clients = () => {
                         className="w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none"
                       >
                         <option>Monthly</option>
-                        <option>Daily</option>
-                        <option>Hourly</option>
                       </select>
                     </div>
                     <div className="space-y-1.5">
