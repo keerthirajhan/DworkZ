@@ -766,8 +766,9 @@ const Visitors = () => {
                   </div>
                 ) : (
                   <div className="flex flex-1 gap-4">
-                    <div className="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 py-5 rounded-2xl font-black uppercase tracking-widest text-xs text-center flex items-center justify-center gap-3">
-                      <CheckCircle size={20} /> Checkout Finalized
+                    <div className="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 py-5 rounded-2xl font-black uppercase tracking-widest text-xs text-center flex items-center justify-center gap-2">
+                      <CheckCircle size={18} className="flex-shrink-0" />
+                      <span className="leading-none text-left">Checkout Finalized</span>
                     </div>
                     {selectedVisitor.invoiceGenerated ? (
                       <button 
