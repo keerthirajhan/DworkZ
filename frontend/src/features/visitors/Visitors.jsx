@@ -32,6 +32,10 @@ const Visitors = () => {
     const purpose = visitor.purpose || 'Day Pass';
     if (purpose.toLowerCase().includes('hour')) {
       setInvoiceAmount('100');
+    } else if (purpose.toLowerCase().includes('week')) {
+      setInvoiceAmount('2000');
+    } else if (purpose.toLowerCase().includes('other')) {
+      setInvoiceAmount('500');
     } else {
       setInvoiceAmount('450');
     }
@@ -249,6 +253,7 @@ const Visitors = () => {
   const getPurposeStyle = (purpose) => {
     const p = purpose?.toLowerCase() || '';
     if (p.includes('day')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+    if (p.includes('week')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
     if (p.includes('hour')) return 'bg-violet-500/10 text-violet-400 border-violet-500/20';
     if (p.includes('vendor') || p.includes('maint')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
     if (p.includes('meet')) return 'bg-primary/10 text-primary border-primary/20';
@@ -484,9 +489,11 @@ const Visitors = () => {
                     className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option value="Day Pass">☀️ Day Pass</option>
+                    <option value="Weekly Pass">📅 Weekly Pass</option>
                     <option value="Hourly Pass">⏱ Hourly Pass</option>
                     <option value="Vendor / Maintenance">🔧 Vendor / Maintenance</option>
                     <option value="Meeting">📅 Scheduled Meeting</option>
+                    <option value="Others">💡 Others</option>
                   </select>
                 </div>
               </div>

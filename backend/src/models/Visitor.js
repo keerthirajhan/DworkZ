@@ -4,7 +4,7 @@ const VisitorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   companyName: { type: String },
   personToVisit: { type: String, required: true },
-  purpose: { type: String, enum: ['Meeting', 'Day Pass', 'Hourly Pass', 'Vendor / Maintenance'], required: true },
+  purpose: { type: String, enum: ['Meeting', 'Day Pass', 'Hourly Pass', 'Vendor / Maintenance', 'Weekly Pass', 'Others'], required: true },
   email: { type: String, required: true },
   aadharNumber: { type: String, required: true },
   idProofUrl: { type: String }, // To store S3 URL
