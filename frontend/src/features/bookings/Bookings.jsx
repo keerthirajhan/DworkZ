@@ -134,6 +134,9 @@ const Bookings = () => {
     setSubmitting(true);
     setError('');
     try {
+      if (bookingData.isGuest && bookingData.phone.length !== 10) {
+        throw new Error('Phone Number must be exactly 10 digits.');
+      }
       const token = localStorage.getItem('dworkz_token');
       const start = parseInt(bookingData.startTime.split(':')[0]);
       const end = parseInt(bookingData.endTime.split(':')[0]);
@@ -361,7 +364,7 @@ const Bookings = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Guest Phone</label>
-                      <input required type="text" placeholder="Phone number" value={bookingData.phone} onChange={(e) => setBookingData({...bookingData, phone: e.target.value})} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary outline-none font-bold" />
+                      <input required type="text" placeholder="10-digit phone number" value={bookingData.phone} onChange={(e) => setBookingData({...bookingData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary outline-none font-bold" />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Hourly Rate (₹)</label>

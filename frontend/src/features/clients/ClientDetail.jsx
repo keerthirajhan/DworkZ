@@ -367,6 +367,12 @@ const ClientDetail = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    if (editFormData.contactPhone && editFormData.contactPhone.length !== 10) {
+      return showAlert('Validation Error', 'Phone Number must be exactly 10 digits.', 'error');
+    }
+    if (editFormData.alternatePhone && editFormData.alternatePhone.length !== 10) {
+      return showAlert('Validation Error', 'Alternate Phone Number must be exactly 10 digits.', 'error');
+    }
     if (editFormData.billingDetails?.gstNumber && editFormData.billingDetails.gstNumber.length !== 15) {
       return showAlert('Validation Error', 'GST Number must be exactly 15 alphanumeric characters', 'error');
     }
@@ -1332,11 +1338,11 @@ const ClientDetail = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-primary uppercase tracking-widest">Phone Number</label>
-                    <input value={editFormData.contactPhone} onChange={(e) => setEditFormData({...editFormData, contactPhone: e.target.value})} type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none" />
+                    <input value={editFormData.contactPhone} onChange={(e) => setEditFormData({...editFormData, contactPhone: e.target.value.replace(/\D/g, '').slice(0, 10)})} type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="e.g. 9876543210" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-primary uppercase tracking-widest">Alternate Phone (Optional)</label>
-                    <input value={editFormData.alternatePhone} onChange={(e) => setEditFormData({...editFormData, alternatePhone: e.target.value})} type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Secondary number" />
+                    <input value={editFormData.alternatePhone} onChange={(e) => setEditFormData({...editFormData, alternatePhone: e.target.value.replace(/\D/g, '').slice(0, 10)})} type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="e.g. 9876543210" />
                   </div>
                 </div>
 

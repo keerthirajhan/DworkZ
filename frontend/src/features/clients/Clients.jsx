@@ -69,6 +69,13 @@ const Clients = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
+    // Special handling for phone numbers: Only numbers, max 10 digits
+    if (name === 'contactPhone') {
+      const numericValue = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, contactPhone: numericValue }));
+      return;
+    }
+
     // Special handling for GST Number: Only numbers, max 12 digits
     if (name === 'billingDetails.gstNumber') {
       const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 15);
@@ -92,6 +99,10 @@ const Clients = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.contactPhone && formData.contactPhone.length !== 10) {
+      alert('Phone Number must be exactly 10 digits.');
+      return;
+    }
     if (formData.billingDetails.gstNumber && formData.billingDetails.gstNumber.length !== 15) {
       alert('GST Number must be exactly 15 alphanumeric characters (e.g., 33AAZFD3031H1ZG)');
       return;
@@ -417,7 +428,7 @@ const Clients = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-xs text-textMuted font-bold uppercase tracking-wider">Phone Number *</label>
-                    <input name="contactPhone" value={formData.contactPhone} onChange={handleInputChange} required type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-all" placeholder="+91 98765 43210" />
+                    <input name="contactPhone" value={formData.contactPhone} onChange={handleInputChange} required type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-all" placeholder="e.g. 9876543210" />
                   </div>
                 </div>
 

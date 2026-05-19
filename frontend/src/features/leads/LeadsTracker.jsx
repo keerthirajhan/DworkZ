@@ -573,6 +573,12 @@ const LeadsTracker = () => {
       return;
     }
 
+    // Phone Number Validation: Must be exactly 10 digits
+    if (newLead.contactPhone.length !== 10) {
+      showAlert('Validation Error', 'Phone Number must be exactly 10 digits.');
+      return;
+    }
+
     try {
       const payload = {
         ...newLead,
@@ -1332,9 +1338,9 @@ const LeadsTracker = () => {
                     <input 
                       required
                       type="text" 
-                      placeholder="+91 98765 43210"
+                      placeholder="e.g. 9876543210"
                       value={newLead.contactPhone}
-                      onChange={(e) => setNewLead({...newLead, contactPhone: e.target.value})}
+                      onChange={(e) => setNewLead({...newLead, contactPhone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
                     />
                   </div>
