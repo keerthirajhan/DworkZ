@@ -312,7 +312,6 @@ const Visitors = () => {
                       <th className="px-6 py-4 font-medium">ID Proof (Aadhar)</th>
                       <th className="px-6 py-4 font-medium">Visiting</th>
                       <th className="px-6 py-4 font-medium">Purpose</th>
-                      <th className="px-6 py-4 font-medium">Email</th>
                       <th className="px-6 py-4 font-medium">Time In</th>
                       <th className="px-6 py-4 font-medium">Status</th>
                       <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -320,9 +319,9 @@ const Visitors = () => {
                   </thead>
                   <tbody className="divide-y divide-borderSubtle">
                     {loading ? (
-                      <tr><td colSpan={8} className="px-6 py-10 text-center text-textMuted">Loading...</td></tr>
+                      <tr><td colSpan={7} className="px-6 py-10 text-center text-textMuted">Loading...</td></tr>
                     ) : filteredLogs.length === 0 ? (
-                      <tr><td colSpan={8} className="px-6 py-10 text-center text-textMuted">No visitor records found.</td></tr>
+                      <tr><td colSpan={7} className="px-6 py-10 text-center text-textMuted">No visitor records found.</td></tr>
                     ) : filteredLogs.map((log) => (
                       <tr 
                         key={log._id} 
@@ -331,12 +330,13 @@ const Visitors = () => {
                       >
                         <td className="px-6 py-4">
                           <div className="font-medium text-textMain flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-primary font-black shadow-inner">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-primary font-black shadow-inner flex-shrink-0">
                               {log.name?.charAt(0)}
                             </div>
                             <div>
                               <div className="font-bold">{log.name}</div>
                               <div className="text-textMuted text-[10px] uppercase tracking-widest font-black mt-0.5">{log.companyName || 'Individual'}</div>
+                              <div className="text-[10px] text-primary/80 font-bold lowercase tracking-normal mt-0.5">{log.email}</div>
                             </div>
                           </div>
                         </td>
@@ -355,11 +355,6 @@ const Visitors = () => {
                           <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border whitespace-nowrap ${getPurposeStyle(log.purpose)}`}>
                             {log.purpose}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-textMuted text-sm">
-                            <span className="text-primary font-medium">{log.email}</span>
-                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 text-textMuted font-medium">
