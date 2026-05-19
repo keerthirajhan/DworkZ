@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, UserPlus, Clock, Camera, CheckCircle, ShieldCheck, LogOut, ArrowRight, Phone, Archive, Eye, X, UserCircle, RefreshCw, Mail } from 'lucide-react';
+import { Search, UserPlus, Clock, Camera, CheckCircle, ShieldCheck, LogOut, ArrowRight, Phone, Archive, Eye, X, UserCircle, RefreshCw, Mail, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../utils/api';
 
@@ -22,6 +22,46 @@ const Visitors = () => {
 
   const [notification, setNotification] = useState(null);
   const [selectedVisitor, setSelectedVisitor] = useState(null); // Detailed view state
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceVisitor, setInvoiceVisitor] = useState(null);
+  const [invoiceAmount, setInvoiceAmount] = useState('450');
+  const [applyGst, setApplyGst] = useState(true);
+
+  const handleOpenInvoiceModal = (visitor) => {
+    setInvoiceVisitor(visitor);
+    const purpose = visitor.purpose || 'Day Pass';
+    if (purpose.toLowerCase().includes('hour')) {
+      setInvoiceAmount('100');
+    } else {
+      setInvoiceAmount('450');
+    }
+    setApplyGst(true);
+    setShowInvoiceModal(true);
+  };
+
+  const handleGenerateInvoice = async () => {
+    if (!invoiceVisitor) return;
+    try {
+      const res = await api.post(`/api/v1/invoices/visitor/${invoiceVisitor._id}`, {
+        amount: Number(invoiceAmount) || 0,
+        applyGst
+      });
+      if (res.data.success) {
+        setNotification({ 
+          type: 'success', 
+          message: `Invoice ${res.data.data.invoiceId} successfully generated for ${invoiceVisitor.name}! View it under the Billing dashboard.` 
+        });
+        
+        // Update local state
+        setLogs(prev => prev.map(log => log._id === invoiceVisitor._id ? { ...log, invoiceGenerated: true } : log));
+        setSelectedVisitor(null); // Close detail view if open
+        setShowInvoiceModal(false);
+        setInvoiceVisitor(null);
+      }
+    } catch (err) {
+      setNotification({ type: 'error', message: 'Invoice Generation Error: ' + (err.response?.data?.error || err.message) });
+    }
+  };
 
   useEffect(() => {
     if (selectedVisitor) {
@@ -339,6 +379,23 @@ const Visitors = () => {
                             >
                               <Eye size={14} />
                             </button>
+                            {log.invoiceGenerated ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setNotification({ type: 'success', message: 'Invoice already generated for this visitor! You can print and track it inside the Billing & Payments dashboard.' }); }}
+                                className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                title="Invoice Already Generated"
+                              >
+                                <FileText size={14} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenInvoiceModal(log); }}
+                                className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-primary hover:bg-primary hover:text-textMain transition-all shadow-sm"
+                                title="Generate Day/Week Pass Invoice"
+                              >
+                                <FileText size={14} />
+                              </button>
+                            )}
                             {log.status === 'Completed' && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleArchive(log._id); }}
@@ -681,17 +738,49 @@ const Visitors = () => {
 
               <div className="pt-6 flex gap-4">
                 {selectedVisitor.status === 'Checked In' ? (
-                  <button 
-                    onClick={() => handleCheckOut(selectedVisitor._id)}
-                    className="flex-1 bg-primary text-textMain py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  >
-                    Check Out Now
-                  </button>
+                  <div className="flex flex-1 gap-4">
+                    <button 
+                      onClick={() => handleCheckOut(selectedVisitor._id)}
+                      className="flex-1 bg-primary text-textMain py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    >
+                      Check Out Now
+                    </button>
+                    {selectedVisitor.invoiceGenerated ? (
+                      <button 
+                        disabled
+                        className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs cursor-not-allowed opacity-80"
+                      >
+                        Invoice Ready
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleOpenInvoiceModal(selectedVisitor)}
+                        className="bg-teal-500/10 border border-teal-500/20 text-teal-400 hover:bg-teal-500 hover:text-white px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all"
+                      >
+                        Bill Pass
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex flex-1 gap-4">
                     <div className="flex-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 py-5 rounded-2xl font-black uppercase tracking-widest text-xs text-center flex items-center justify-center gap-3">
                       <CheckCircle size={20} /> Checkout Finalized
                     </div>
+                    {selectedVisitor.invoiceGenerated ? (
+                      <button 
+                        disabled
+                        className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs cursor-not-allowed opacity-80"
+                      >
+                        Invoice Ready
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleOpenInvoiceModal(selectedVisitor)}
+                        className="bg-teal-500/10 border border-teal-500/20 text-teal-400 hover:bg-teal-500 hover:text-white px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all"
+                      >
+                        Bill Pass
+                      </button>
+                    )}
                     <button 
                       onClick={() => handleArchive(selectedVisitor._id)}
                       className="bg-rose-500/10 border border-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white px-6 py-5 rounded-2xl transition-all"
@@ -712,6 +801,111 @@ const Visitors = () => {
           </div>
         </div>
       )}
+
+      {/* Generate Visitor Invoice Modal */}
+      <AnimatePresence>
+        {showInvoiceModal && invoiceVisitor && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-background/90 backdrop-blur-xl">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-surface border border-primary/20 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+            >
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-borderSubtle">
+                <h3 className="text-lg font-bold text-textMain uppercase tracking-tight flex items-center gap-2">
+                  <FileText className="text-primary" /> Bill Visitor Pass
+                </h3>
+                <button
+                  onClick={() => { setShowInvoiceModal(false); setInvoiceVisitor(null); }}
+                  className="p-1 hover:bg-white/5 rounded-full text-textMuted hover:text-white transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-4 bg-background rounded-2xl border border-borderSubtle space-y-2">
+                  <p className="text-[10px] text-textMuted uppercase font-bold tracking-wider">Visitor Details</p>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-textMain text-sm">{invoiceVisitor.name}</span>
+                    <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded uppercase font-black tracking-widest">{invoiceVisitor.purpose}</span>
+                  </div>
+                  <p className="text-xs text-textMuted font-medium">{invoiceVisitor.email}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-primary">Base Amount (INR)</label>
+                  <input
+                    type="number"
+                    value={invoiceAmount}
+                    onChange={(e) => setInvoiceAmount(e.target.value)}
+                    className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30 font-black text-lg"
+                    placeholder="450"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-background rounded-2xl border border-borderSubtle">
+                  <input
+                    type="checkbox"
+                    id="applyGst"
+                    checked={applyGst}
+                    onChange={(e) => setApplyGst(e.target.checked)}
+                    className="w-5 h-5 rounded border-borderSubtle text-primary focus:ring-primary cursor-pointer bg-transparent"
+                  />
+                  <label htmlFor="applyGst" className="text-xs font-bold text-textMain cursor-pointer select-none">
+                    Apply 18% GST (9% CGST + 9% SGST)
+                  </label>
+                </div>
+
+                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
+                  <div className="flex justify-between text-xs text-textMuted font-medium">
+                    <span>Base Fare:</span>
+                    <span>₹{Number(invoiceAmount || 0).toLocaleString()}</span>
+                  </div>
+                  {applyGst && (
+                    <>
+                      <div className="flex justify-between text-xs text-textMuted font-medium">
+                        <span>CGST @ 9%:</span>
+                        <span>₹{(Number(invoiceAmount || 0) * 0.09).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-textMuted font-medium">
+                        <span>SGST @ 9%:</span>
+                        <span>₹{(Number(invoiceAmount || 0) * 0.09).toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="h-px bg-borderSubtle opacity-30 my-2"></div>
+                  <div className="flex justify-between text-sm font-black text-textMain">
+                    <span>Total Amount:</span>
+                    <span>
+                      ₹{applyGst 
+                        ? (Number(invoiceAmount || 0) * 1.18).toFixed(2) 
+                        : Number(invoiceAmount || 0).toFixed(2)
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-4">
+                  <button
+                    onClick={() => { setShowInvoiceModal(false); setInvoiceVisitor(null); }}
+                    className="flex-1 bg-surface border border-borderSubtle text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGenerateInvoice}
+                    className="flex-1 bg-primary text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Generate Invoice
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Custom Notification Modal */}
       <AnimatePresence>

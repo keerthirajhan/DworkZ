@@ -245,7 +245,7 @@ const Billing = () => {
                   <div className="font-bold text-primary text-base underline underline-offset-4 cursor-pointer" onClick={() => openPreview(invoice)}>{invoice.invoiceId}</div>
                 </td>
                 <td className="px-8 py-6">
-                  <div className="font-bold text-textMain uppercase tracking-tight">{invoice.clientId?.companyName || invoice.bookingId?.clientName || 'Visitor'}</div>
+                  <div className="font-bold text-textMain uppercase tracking-tight">{invoice.clientId?.companyName || invoice.bookingId?.clientName || invoice.visitorId?.name || 'Visitor'}</div>
                 </td>
                 <td className="px-8 py-6">
                   <div className="font-black text-textMain text-lg">₹{getInvoiceTotal(invoice).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</div>
@@ -342,7 +342,7 @@ const Billing = () => {
                       </div>
 
                       <div className="border-b border-black">
-                        <div className="p-4"><p className="text-[9px] font-black uppercase text-gray-400 mb-2">BILL TO</p><h4 className="font-black text-sm text-gray-800 uppercase">{selectedInvoice.clientId?.companyName || selectedInvoice.bookingId?.clientName}</h4><div className="text-[10px] text-gray-600 font-bold mt-1 leading-relaxed">{selectedInvoice.clientId?.billingDetails?.billingAddress || selectedInvoice.bookingId?.guestDetails?.phone || 'N/A'}{selectedInvoice.clientId?.billingDetails?.gstNumber && <><br/>GSTIN: {selectedInvoice.clientId.billingDetails.gstNumber}</>}</div></div>
+                        <div className="p-4"><p className="text-[9px] font-black uppercase text-gray-400 mb-2">BILL TO</p><h4 className="font-black text-sm text-gray-800 uppercase">{selectedInvoice.clientId?.companyName || selectedInvoice.bookingId?.clientName || selectedInvoice.visitorId?.name || 'Visitor'}</h4><div className="text-[10px] text-gray-600 font-bold mt-1 leading-relaxed">{selectedInvoice.clientId?.billingDetails?.billingAddress || selectedInvoice.bookingId?.guestDetails?.phone || selectedInvoice.visitorId?.email || 'N/A'}{selectedInvoice.clientId?.billingDetails?.gstNumber && <><br/>GSTIN: {selectedInvoice.clientId.billingDetails.gstNumber}</>}</div></div>
                       </div>
 
                       <table className="w-full text-left text-[10px] border-b border-black">
@@ -377,10 +377,13 @@ const Billing = () => {
                                   <td className="p-4 border-r border-black text-center">1</td>
                                   <td className="p-4 border-r border-black">
                                     <div className="font-black text-gray-800 text-xs mb-1">
-                                      {selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
+                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : selectedInvoice.clientId?.planType === 'Yearly' ? 'Annual Rent Income-Space' : 'Rent Income-Space'}
                                     </div>
                                     <div className="text-[9px] italic text-gray-400">
                                       {(() => {
+                                        if (selectedInvoice.visitorId) {
+                                          return `One-time visitor session pass for ${selectedInvoice.visitorId.name}`;
+                                        }
                                         if (selectedInvoice.isGuest) {
                                           return 'One-time session reservation';
                                         }

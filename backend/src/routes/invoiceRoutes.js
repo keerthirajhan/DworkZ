@@ -20,6 +20,7 @@ router.get('/', getInvoices);
 router.get('/archived', getArchivedInvoices);
 router.post('/generate', generateInvoices);
 router.post('/guest/:bookingId', require('../controllers/invoiceController').generateGuestInvoice);
+router.post('/visitor/:visitorId', require('../controllers/invoiceController').generateVisitorInvoice);
 router.post('/:id/send', sendInvoice);
 router.post('/:id/mark-sent', markInvoiceSent);
 router.post('/:id/mark-paid', markAsPaid);

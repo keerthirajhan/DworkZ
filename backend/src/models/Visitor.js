@@ -11,6 +11,7 @@ const VisitorSchema = new mongoose.Schema({
   timeIn: { type: Date, default: Date.now },
   timeOut: { type: Date },
   status: { type: String, enum: ['Checked In', 'Completed'], default: 'Checked In' },
+  invoiceGenerated: { type: Boolean, default: false },
   isOtpVerified: { type: Boolean, default: false },
   isArchived: { type: Boolean, default: false },
   archivedAt: { type: Date },

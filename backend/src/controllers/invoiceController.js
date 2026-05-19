@@ -1,6 +1,7 @@
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
 const Booking = require('../models/Booking');
+const Visitor = require('../models/Visitor');
 const logActivity = require('../utils/activityLogger');
 
 // Helper to convert number to words (Simplified for INR)
@@ -29,7 +30,8 @@ exports.getInvoices = async (req, res) => {
         path: 'clientId',
         select: 'companyName name contactEmail contactPhone billingDetails planType'
       })
-      .populate('bookingId');
+      .populate('bookingId')
+      .populate('visitorId');
     res.status(200).json({ success: true, count: invoices.length, data: invoices });
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };
@@ -42,7 +44,8 @@ exports.getArchivedInvoices = async (req, res) => {
         path: 'clientId',
         select: 'companyName name contactEmail contactPhone billingDetails planType'
       })
-      .populate('bookingId');
+      .populate('bookingId')
+      .populate('visitorId');
     res.status(200).json({ success: true, count: invoices.length, data: invoices });
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };
@@ -265,5 +268,67 @@ exports.updateInvoice = async (req, res) => {
   try {
     const invoice = await Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, data: invoice });
+  } catch (err) { res.status(400).json({ success: false, error: err.message }); }
+};
+
+exports.generateVisitorInvoice = async (req, res) => {
+  try {
+    const { amount, applyGst } = req.body;
+    const visitor = await Visitor.findById(req.params.visitorId);
+    if (!visitor) return res.status(404).json({ success: false, error: 'Visitor not found' });
+    
+    // Check if invoice already exists
+    const existing = await Invoice.findOne({ visitorId: visitor._id });
+    if (existing) {
+      return res.status(200).json({ 
+        success: true, 
+        data: existing,
+        alreadyExists: true 
+      });
+    }
+
+    const baseAmount = Number(amount) || 0;
+    let cgstAmount = 0;
+    let sgstAmount = 0;
+    let totalAmount = baseAmount;
+
+    if (applyGst) {
+      cgstAmount = Number((baseAmount * 0.09).toFixed(2));
+      sgstAmount = Number((baseAmount * 0.09).toFixed(2));
+      totalAmount = Number((baseAmount + cgstAmount + sgstAmount).toFixed(2));
+    }
+
+    const now = new Date();
+    const baseCount = await Invoice.countDocuments();
+    const sequence = (baseCount + 1).toString().padStart(4, '0');
+    const invoiceId = `DWZ-GST-${now.getFullYear()}-${sequence}`;
+
+    const invoice = await Invoice.create({
+      invoiceId,
+      visitorId: visitor._id,
+      isGuest: true,
+      billingPeriod: `${visitor.purpose || 'Day Pass'} Session`,
+      baseAmount,
+      cgstAmount,
+      sgstAmount,
+      overageAmount: 0,
+      totalAmount,
+      dueDate: now,
+      status: 'Pending'
+    });
+
+    await logActivity({
+      title: 'Visitor Invoice Generated',
+      desc: `Billing invoice ${invoiceId} generated for visitor ${visitor.name} (₹${totalAmount})`,
+      type: 'payment',
+      user: req.user.id,
+      userName: req.user.name,
+      color: 'bg-teal-500'
+    });
+
+    visitor.invoiceGenerated = true;
+    await visitor.save();
+
+    res.status(201).json({ success: true, data: invoice });
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };

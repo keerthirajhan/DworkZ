@@ -4,6 +4,7 @@ const InvoiceSchema = new mongoose.Schema({
   invoiceId: { type: String, required: true, unique: true },
   clientId: { type: mongoose.Schema.ObjectId, ref: 'Client', required: false },
   bookingId: { type: mongoose.Schema.ObjectId, ref: 'Booking', required: false },
+  visitorId: { type: mongoose.Schema.ObjectId, ref: 'Visitor', required: false },
   isGuest: { type: Boolean, default: false },
   billingPeriod: { type: String, required: true }, // Format: "April 2026" or "One-time"
   baseAmount: { type: Number, required: true },
