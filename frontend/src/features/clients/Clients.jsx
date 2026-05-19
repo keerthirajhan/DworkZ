@@ -19,9 +19,9 @@ const Clients = () => {
     companyName: '',
     contactEmail: '',
     contactPhone: '',
-    planType: 'Monthly',
-    workspaceType: 'Desk',
-    workspaceDetails: '',
+    planType: 'Yearly',
+    workspaceType: 'Virtual Office',
+    workspaceDetails: 'Virtual Office Session',
     rentAmount: '',
     status: 'Active',
     billingDetails: {
@@ -105,7 +105,7 @@ const Clients = () => {
       fetchClients();
       setFormData({
         name: '', companyName: '', contactEmail: '', contactPhone: '',
-        planType: 'Monthly', workspaceType: 'Desk', workspaceDetails: '',
+        planType: 'Yearly', workspaceType: 'Virtual Office', workspaceDetails: 'Virtual Office Session',
         rentAmount: '', status: 'Active',
         billingDetails: { gstNumber: '', billingAddress: '' },
         pricingDetails: { meetingRoomRate: 500 }
@@ -423,47 +423,55 @@ const Clients = () => {
 
                 <div className="p-4 bg-background/50 rounded-2xl border border-borderSubtle space-y-4">
                   <h3 className="text-xs font-bold text-primary uppercase tracking-widest">Membership & Workspace</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Plan Type</label>
-                      <select name="planType" value={formData.planType} onChange={handleInputChange} className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
-                        <option value="Hourly">Hourly</option>
-                        <option value="Daily">Daily</option>
-                        <option value="Monthly">Monthly</option>
-                        {formData.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
-                      </select>
+                  
+                  {/* Fixed Virtual Office Plan Details Card */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-surface/50 border border-borderSubtle p-4 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold text-textMuted uppercase tracking-widest block mb-0.5">Workspace Type</span>
+                        <span className="text-sm font-black text-violet-400 uppercase tracking-wide">🌐 Virtual Office</span>
+                      </div>
+                      <span className="text-[9px] font-bold bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded">Locked Option</span>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Workspace</label>
-                      <select name="workspaceType" value={formData.workspaceType} onChange={handleInputChange} className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none">
-                        <option>Desk</option>
-                        <option>Cabin</option>
-                        <option>Virtual Office</option>
-                        <option>Custom</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Rent Amount (₹)</label>
-                      <input name="rentAmount" value={formData.rentAmount} onChange={handleInputChange} required type="number" onWheel={(e) => e.target.blur()} className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none" placeholder="25000" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Meeting Room Rate (₹/hr)</label>
-                      <input name="pricingDetails.meetingRoomRate" value={formData.pricingDetails?.meetingRoomRate ?? ''} onChange={handleInputChange} type="number" onWheel={(e) => e.target.blur()} className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none" placeholder="500" />
+                    
+                    <div className="bg-surface/50 border border-borderSubtle p-4 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold text-textMuted uppercase tracking-widest block mb-0.5">Plan Type</span>
+                        <span className="text-sm font-black text-primary uppercase tracking-wide">📆 Yearly Billing</span>
+                      </div>
+                      <span className="text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded">Locked Option</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                     <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Workspace Details (Cabin No / Desk No)</label>
-                      <input name="workspaceDetails" value={formData.workspaceDetails} onChange={handleInputChange} required type="text" className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none" placeholder="Cabin 4 / Desk 12" />
+                      <label className="text-xs text-textMuted font-bold uppercase tracking-wider">Annual Rent Amount (₹) *</label>
+                      <input 
+                        name="rentAmount" 
+                        value={formData.rentAmount} 
+                        onChange={handleInputChange} 
+                        required 
+                        type="number" 
+                        onWheel={(e) => e.target.blur()} 
+                        className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30" 
+                        placeholder="e.g. 25000" 
+                      />
                     </div>
+                    
                     <div className="space-y-1.5">
-                      <label className="text-xs text-textMuted font-medium">Initial Status</label>
-                      <select name="status" value={formData.status} onChange={handleInputChange} className="w-full bg-background border border-borderSubtle rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none font-bold text-primary">
-                        <option value="Lead">On Discussion</option>
-                        <option value="Proposal Sent">Proposal Sent</option>
-                        <option value="Agreement Pending">Awaiting Signature</option>
-                        <option value="Active">Active Member</option>
-                      </select>
+                      <label className="text-xs text-textMuted font-bold uppercase tracking-wider">Meeting Room Overage Rate (₹/hr) *</label>
+                      <input 
+                        name="pricingDetails.meetingRoomRate" 
+                        value={formData.pricingDetails?.meetingRoomRate ?? ''} 
+                        onChange={handleInputChange} 
+                        type="number" 
+                        onWheel={(e) => e.target.blur()} 
+                        className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30" 
+                        placeholder="e.g. 500" 
+                      />
+                      <p className="text-[9px] text-emerald-400 font-bold tracking-tight mt-1">
+                        🎁 Includes 5 Free Hours per Month. Overages charged at this rate.
+                      </p>
                     </div>
                   </div>
                 </div>
