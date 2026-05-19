@@ -324,16 +324,19 @@ const Billing = () => {
                              <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
                              <p className="font-black text-xs text-gray-800 mt-1">
                                {(() => {
-                                 if (selectedInvoice.status === 'Paid' || selectedInvoice.clientId?.planType === 'Daily') {
-                                   return "Paid in Full / One-Time";
+                                 if (
+                                   selectedInvoice.visitorId || 
+                                   selectedInvoice.isGuest || 
+                                   selectedInvoice.status === 'Paid' || 
+                                   selectedInvoice.clientId?.planType === 'Daily' ||
+                                   selectedInvoice.billingPeriod?.toLowerCase().includes('onboarding') ||
+                                   selectedInvoice.billingPeriod?.toLowerCase().includes('one-time')
+                                 ) {
+                                   return "Paid in Full/One-Time";
                                  }
                                  const generated = new Date(selectedInvoice.dateGenerated);
                                  const due = new Date(selectedInvoice.dueDate);
                                  const diffDays = Math.ceil(Math.abs(due - generated) / (1000 * 60 * 60 * 24));
-                                 
-                                 if (selectedInvoice.isGuest || selectedInvoice.clientId?.planType === 'Daily' || selectedInvoice.billingPeriod?.toLowerCase().includes('onboarding') || selectedInvoice.billingPeriod?.toLowerCase().includes('upgrade') || selectedInvoice.billingPeriod?.toLowerCase().includes('one-time') || diffDays <= 1) {
-                                   return "Due on Receipt (One-Time)";
-                                 }
                                  return `${diffDays} Days (Due: ${due.toLocaleDateString()})`;
                                })()}
                              </p>
