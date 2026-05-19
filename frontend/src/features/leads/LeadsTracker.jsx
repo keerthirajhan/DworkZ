@@ -779,8 +779,6 @@ const LeadsTracker = () => {
                         className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2 text-xs text-textMain focus:border-primary focus:outline-none"
                       >
                         <option value="All">All Plans</option>
-                        <option value="Daily">Daily</option>
-                        <option value="Weekly">Weekly</option>
                         <option value="Monthly">Monthly</option>
                         <option value="Yearly">Yearly</option>
                       </select>
@@ -1077,8 +1075,6 @@ const LeadsTracker = () => {
                         <select value={proposalData.proposedPlan}
                           onChange={(e) => setProposalData(d => ({...d, proposedPlan: e.target.value}))}
                           className="w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none">
-                          <option value="Daily">Daily</option>
-                          <option value="Weekly">Weekly</option>
                           <option value="Monthly">Monthly</option>
                           {proposalData.workspaceType === 'Virtual Office' && <option value="Yearly">Yearly</option>}
                         </select>
