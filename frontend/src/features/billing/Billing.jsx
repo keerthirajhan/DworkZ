@@ -318,7 +318,7 @@ const Billing = () => {
                                  const due = new Date(selectedInvoice.dueDate);
                                  const diffDays = Math.ceil(Math.abs(due - generated) / (1000 * 60 * 60 * 24));
                                  
-                                 if (selectedInvoice.isGuest || selectedInvoice.billingPeriod?.toLowerCase().includes('onboarding') || selectedInvoice.billingPeriod?.toLowerCase().includes('upgrade') || selectedInvoice.billingPeriod?.toLowerCase().includes('one-time') || diffDays <= 1) {
+                                 if (selectedInvoice.isGuest || selectedInvoice.clientId?.planType === 'Daily' || selectedInvoice.billingPeriod?.toLowerCase().includes('onboarding') || selectedInvoice.billingPeriod?.toLowerCase().includes('upgrade') || selectedInvoice.billingPeriod?.toLowerCase().includes('one-time') || diffDays <= 1) {
                                    return "Due on Receipt (One-Time)";
                                  }
                                  return `${diffDays} Days (Due: ${due.toLocaleDateString()})`;
@@ -347,6 +347,9 @@ const Billing = () => {
                                     return 'One-time session reservation';
                                   }
                                   const plan = selectedInvoice.clientId?.planType || 'Monthly';
+                                  if (plan === 'Daily') {
+                                    return `Day pass rental charges for ${selectedInvoice.billingPeriod}`;
+                                  }
                                   if (plan === 'Yearly') {
                                     try {
                                       const parts = selectedInvoice.billingPeriod.split(' ');
@@ -386,12 +389,12 @@ const Billing = () => {
                             <tr><td className="p-4 border-r border-black text-center">2</td><td className="p-4 border-r border-black"><div className="font-black text-gray-800 text-xs mb-1">Utilization Overage</div><div className="text-[9px] italic text-gray-400">Meeting Room Usage Beyond Quota</div></td><td className="p-4 border-r border-black text-center">Service</td><td className="p-4 border-r border-black text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td><td className="p-4 text-right">₹{selectedInvoice.overageAmount.toLocaleString()}</td></tr>
                           )}
                           {selectedInvoice.cgstAmount > 0 && (
-                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: CGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.cgstAmount.toLocaleString()}</td></tr>
+                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: CGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.cgstAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                           )}
                           {selectedInvoice.sgstAmount > 0 && (
-                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: SGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.sgstAmount.toLocaleString()}</td></tr>
+                             <tr className="border-t border-black font-bold text-xs"><td colSpan={4} className="p-2 border-r border-black text-right uppercase">Add: SGST @ 9%</td><td className="p-2 text-right">₹{selectedInvoice.sgstAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                           )}
-                          <tr className="border-t border-black font-black text-xs"><td colSpan={4} className="p-3 border-r border-black text-right uppercase tracking-widest">Total Amount</td><td className="p-3 text-right text-base text-[#00bfa5]">₹{selectedInvoice.totalAmount.toLocaleString()}</td></tr>
+                          <tr className="border-t border-black font-black text-xs"><td colSpan={4} className="p-3 border-r border-black text-right uppercase tracking-widest">Total Amount</td><td className="p-3 text-right text-base text-[#00bfa5]">₹{selectedInvoice.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td></tr>
                         </tbody>
                       </table>
                       <div className="p-4 border-b border-black"><p className="text-[9px] font-black uppercase text-gray-400 mb-1">Amount Chargeable (in words)</p><p className="font-black text-xs text-gray-800 uppercase">{numberToWords(selectedInvoice.totalAmount)}</p></div>

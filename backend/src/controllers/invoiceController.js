@@ -78,9 +78,9 @@ exports.generateInvoices = async (req, res) => {
       const clientRate = client.pricingDetails?.meetingRoomRate || 500;
       const overageAmount = overageHours * clientRate;
       const subTotal = baseAmount + overageAmount;
-      const cgstAmount = Math.round(subTotal * 0.09);
-      const sgstAmount = Math.round(subTotal * 0.09);
-      const totalAmount = subTotal + cgstAmount + sgstAmount;
+      const cgstAmount = Number((subTotal * 0.09).toFixed(2));
+      const sgstAmount = Number((subTotal * 0.09).toFixed(2));
+      const totalAmount = Number((subTotal + cgstAmount + sgstAmount).toFixed(2));
 
       // Professional Sequential ID Format: DWZ-INV-YYYY-XXXX
       const sequence = (baseCount + count + 1).toString().padStart(4, '0');
