@@ -155,7 +155,6 @@ exports.updatePassword = async (req, res, next) => {
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
-  }
 };
 
 // @route   POST /api/v1/auth/force-reset-password
