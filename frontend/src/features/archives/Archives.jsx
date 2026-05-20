@@ -137,6 +137,9 @@ const Archives = () => {
     'Billing': <FileText size={14} />
   };
 
+  const allPeriodsSame = ['visitors', 'clients', 'bookings', 'inventory', 'billing'].every(k => retentionPeriods[k] === retentionPeriods.visitors);
+  const currentDisplayPeriod = filterType === 'all' ? (allPeriodsSame ? retentionPeriods.visitors : 'Mixed') : retentionPeriods[filterType];
+
   return (
     <div className="p-8 w-full max-w-7xl mx-auto space-y-8 relative">
       
@@ -161,13 +164,14 @@ const Archives = () => {
               <div className="flex flex-col items-end">
                  <p className="text-[9px] font-black uppercase text-textMuted tracking-widest mb-1.5">Retention Period</p>
                  <select 
-                   value={retentionPeriods[filterType]}
+                   value={currentDisplayPeriod}
                    onChange={(e) => {
                      setPendingRetentionPeriod(e.target.value);
                      setShowRetentionConfirm(true);
                    }}
                    className="bg-surface border border-borderSubtle text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl focus:outline-none focus:border-primary transition-all text-textMain shadow-lg cursor-pointer"
                  >
+                    {currentDisplayPeriod === 'Mixed' && <option value="Mixed" disabled hidden>Mixed Periods</option>}
                     <option value="30 Days">30 Days (Standard)</option>
                     <option value="90 Days">90 Days (Extended)</option>
                     <option value="1 Year">1 Year (Audit)</option>
@@ -200,7 +204,11 @@ const Archives = () => {
         <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shrink-0 border border-primary/20 shadow-inner"><ShieldAlert size={24} /></div>
         <div className="space-y-1 relative z-10">
           <p className="text-[10px] font-black uppercase tracking-widest text-primary">Data Integrity & Sovereignty Policy</p>
-          <p className="text-textMain font-bold text-sm leading-relaxed">Deleted records are retained in the system vault for <span className="text-primary underline underline-offset-4 decoration-2">{retentionPeriods[filterType]}</span> for audit compliance. Automated purging occurs on the 1st of every month for expired entries.</p>
+          <p className="text-textMain font-bold text-sm leading-relaxed">
+            Deleted records are retained in the system vault for <span className="text-primary underline underline-offset-4 decoration-2">
+              {currentDisplayPeriod === 'Mixed' ? 'their respective periods' : currentDisplayPeriod}
+            </span> for audit compliance. Automated purging occurs on the 1st of every month for expired entries.
+          </p>
         </div>
       </div>
 
