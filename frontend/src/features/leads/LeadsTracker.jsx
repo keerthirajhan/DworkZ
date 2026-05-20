@@ -1479,7 +1479,7 @@ const LeadsTracker = () => {
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none font-bold text-primary"
                     >
                       {newLead.workspaceType === 'Cabin' ? (
-                        <option value="Yearly">Yearly (Locked)</option>
+                        <option value="Monthly">Monthly (1 Year Lock)</option>
                       ) : (
                         <option value="Monthly">Monthly (Locked)</option>
                       )}

@@ -1433,7 +1433,7 @@ const ClientDetail = () => {
                     {client?.workspaceType === 'Individual Seat' ? (
                       <option value="Monthly">Monthly (Locked)</option>
                     ) : client?.workspaceType === 'Cabin' ? (
-                      <option value="Yearly">Yearly (Locked)</option>
+                      <option value="Monthly">Monthly (1 Year Lock)</option>
                     ) : (
                       <>
                         <option value="Monthly">Monthly</option>
