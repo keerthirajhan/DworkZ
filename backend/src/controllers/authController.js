@@ -158,75 +158,34 @@ exports.updatePassword = async (req, res, next) => {
   }
 };
 
-// @route   POST /api/v1/auth/forgotpassword-session
+// @route   POST /api/v1/auth/force-reset-password
 // @access  Private
-exports.sendPasswordResetOtp = async (req, res, next) => {
+exports.forceResetPassword = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetOtp = otp;
-    user.resetOtpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-    await user.save();
+    const { newPassword } = req.body;
     
-    const emailService = require('../services/emailService');
-    await emailService.sendEmail({
-      to: user.email,
-      subject: 'DworkZ - Password Reset OTP',
-      html: `<div style="font-family: sans-serif; padding: 20px;">
-        <h2>Password Reset Request</h2>
-        <p>You requested to reset your password. Use the following OTP to proceed:</p>
-        <h1 style="color: #14b8a6; letter-spacing: 2px;">${otp}</h1>
-        <p>This OTP will expire in 10 minutes.</p>
-        <p>If you did not request this, please ignore this email.</p>
-      </div>`,
-      type: 'security'
-    });
-    
-    res.status(200).json({ success: true, message: 'OTP sent to your registered email.' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// @route   POST /api/v1/auth/resetpassword-session
-// @access  Private
-exports.resetPasswordWithOtp = async (req, res, next) => {
-  try {
-    const { otp, newPassword } = req.body;
-    
-    if (!otp || !newPassword) {
-      return res.status(400).json({ success: false, error: 'Please provide both OTP and new password.' });
-    }
-    
-    if (newPassword.length < 6) {
+    if (!newPassword || newPassword.length < 6) {
       return res.status(400).json({ success: false, error: 'New password must be at least 6 characters.' });
     }
 
-    const user = await User.findOne({ 
-      _id: req.user.id, 
-      resetOtp: otp, 
-      resetOtpExpire: { $gt: Date.now() } 
-    }).select('+password +resetOtp +resetOtpExpire');
-
+    const user = await User.findById(req.user.id).select('+password');
     if (!user) {
-      return res.status(400).json({ success: false, error: 'Invalid or expired OTP.' });
+      return res.status(404).json({ success: false, error: 'User not found' });
     }
 
     user.password = newPassword;
-    user.resetOtp = undefined;
-    user.resetOtpExpire = undefined;
     await user.save();
 
     await logActivity({
-      title: 'Password Reset',
-      desc: `${user.name} reset their password using OTP verification`,
+      title: 'Password Force Reset',
+      desc: `${user.name} forcefully reset their password from settings`,
       type: 'security',
       user: user._id,
       userName: user.name,
       color: 'bg-red-500'
     });
 
-    res.status(200).json({ success: true, message: 'Password reset successful.' });
+    res.status(200).json({ success: true, message: 'Password forcefully reset.' });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -34,39 +34,23 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
   };
   const [passwords, setPasswords] = React.useState({ current: '', new: '' });
   const [updatingPass, setUpdatingPass] = React.useState(false);
-  const [otpMode, setOtpMode] = React.useState(false);
-  const [otp, setOtp] = React.useState('');
-
-  const handleForgotPassword = async () => {
-    setUpdatingPass(true);
-    try {
-      const api = (await import('../../utils/api')).default;
-      await api.post('/api/v1/auth/forgotpassword-session');
-      setOtpMode(true);
-      setAlert({ title: 'OTP Sent', message: 'A password reset OTP has been sent to your email.', type: 'success' });
-    } catch (err) {
-      setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to send OTP.', type: 'error' });
-    } finally {
-      setUpdatingPass(false);
-    }
-  };
+  const [forceResetMode, setForceResetMode] = React.useState(false);
 
   const handleUpdatePassword = async () => {
-    if (otpMode) {
-      if (!otp || !passwords.new) {
-        return setAlert({ title: 'Error', message: 'Please provide both OTP and new password.', type: 'error' });
+    if (forceResetMode) {
+      if (!passwords.new) {
+        return setAlert({ title: 'Error', message: 'Please provide a new password.', type: 'error' });
       }
       if (passwords.new.length < 6) return setAlert({ title: 'Error', message: 'New password must be at least 6 characters.', type: 'error' });
       setUpdatingPass(true);
       try {
         const api = (await import('../../utils/api')).default;
-        await api.post('/api/v1/auth/resetpassword-session', { otp, newPassword: passwords.new });
-        setOtpMode(false);
-        setOtp('');
+        await api.post('/api/v1/auth/force-reset-password', { newPassword: passwords.new });
+        setForceResetMode(false);
         setPasswords({ current: '', new: '' });
         setAlert({ title: 'Password Reset', message: 'Your password has been successfully reset.', type: 'success' });
       } catch (err) {
-        setAlert({ title: 'Error', message: err.response?.data?.error || 'Invalid OTP.', type: 'error' });
+        setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to force reset password.', type: 'error' });
       } finally {
         setUpdatingPass(false);
       }
@@ -347,16 +331,13 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
               <div className="space-y-6">
                 <div className="p-6 bg-background/50 border border-borderSubtle rounded-2xl space-y-4">
                   <h3 className="text-sm font-bold text-textMain uppercase tracking-widest">Change Password</h3>
+                  {forceResetMode && (
+                    <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-xs text-red-500 font-bold mb-4">
+                      Warning: You are forcefully resetting your password. This action cannot be undone.
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {otpMode ? (
-                      <input 
-                        type="text" 
-                        placeholder="Enter 6-Digit OTP from Email" 
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        className="w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
-                      />
-                    ) : (
+                    {!forceResetMode && (
                       <input 
                         type="password" 
                         placeholder="Current Password" 
@@ -370,24 +351,33 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                       placeholder="New Password" 
                       value={passwords.new}
                       onChange={(e) => setPasswords({...passwords, new: e.target.value})}
-                      className="w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
+                      className={`w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none ${forceResetMode ? 'md:col-span-2' : ''}`} 
                     />
                   </div>
                   <div className="flex items-center justify-between mt-4">
                     <button 
                       onClick={handleUpdatePassword}
                       disabled={updatingPass}
-                      className="text-xs font-black text-primary uppercase tracking-widest hover:underline disabled:opacity-50"
+                      className={`text-xs font-black uppercase tracking-widest hover:underline disabled:opacity-50 ${forceResetMode ? 'text-red-500' : 'text-primary'}`}
                     >
-                      {updatingPass ? (otpMode ? 'Verifying...' : 'Updating...') : (otpMode ? 'Reset Password' : 'Update Password')}
+                      {updatingPass ? 'Updating...' : (forceResetMode ? 'Force Reset Password' : 'Update Password')}
                     </button>
-                    {!otpMode && (
+                    {!forceResetMode && (
                       <button 
-                        onClick={handleForgotPassword}
+                        onClick={() => setForceResetMode(true)}
                         disabled={updatingPass}
-                        className="text-xs font-bold text-textMuted hover:text-primary transition-colors disabled:opacity-50"
+                        className="text-xs font-bold text-textMuted hover:text-red-500 transition-colors disabled:opacity-50"
                       >
                         Forgot Current Password?
+                      </button>
+                    )}
+                    {forceResetMode && (
+                      <button 
+                        onClick={() => setForceResetMode(false)}
+                        disabled={updatingPass}
+                        className="text-xs font-bold text-textMuted hover:text-textMain transition-colors disabled:opacity-50"
+                      >
+                        Cancel
                       </button>
                     )}
                   </div>
