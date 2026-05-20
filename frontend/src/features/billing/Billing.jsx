@@ -378,7 +378,18 @@ const Billing = () => {
                                         if (plan === 'Daily') {
                                           return "";
                                         }
-
+                                        
+                                        const workspaceType = selectedInvoice.clientId?.workspaceType;
+                                        if (workspaceType === 'Virtual Office') {
+                                          return `One-Time Virtual Office Registration / Payment`;
+                                        }
+                                        if (workspaceType === 'Cabin') {
+                                          return `Monthly Cabin Rental Charges (Annual Contract) for ${selectedInvoice.billingPeriod}`;
+                                        }
+                                        if (workspaceType === 'Individual Seat') {
+                                          return `Monthly Dedicated Seat Rental Charges for ${selectedInvoice.billingPeriod}`;
+                                        }
+                                        
                                         return `Monthly Workspace Rental Charges for ${selectedInvoice.billingPeriod}`;
                                       })()}
                                     </div>
