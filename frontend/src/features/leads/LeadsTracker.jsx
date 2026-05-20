@@ -1082,7 +1082,7 @@ const LeadsTracker = () => {
                       <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
                         <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-1">Total Amount</p>
                         <p className="text-2xl font-black text-textMain">₹{Number(proposalData.totalPrice).toLocaleString()}</p>
-                        <p className="text-[10px] text-textMuted">per {proposalData.proposedPlan}</p>
+                        <p className="text-[10px] text-textMuted">per Month</p>
                       </div>
                     </div>
                     {/* Right: Live Preview */}
