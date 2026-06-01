@@ -1,10 +1,14 @@
 const sgMail = require('@sendgrid/mail');
 const nodemailer = require('nodemailer');
 const puppeteer = require('puppeteer');
+const axios = require('axios');
 const EmailLog = require('../models/EmailLog');
 
 // Helper to get fresh config
 const getConfig = () => {
+  const BREVO_KEY = process.env.BREVO_API_KEY;
+  const isBrevoConfigured = BREVO_KEY && !BREVO_KEY.includes('your_');
+
   const SENDGRID_KEY = process.env.SENDGRID_API_KEY;
   const isSendGridConfigured = SENDGRID_KEY && !SENDGRID_KEY.includes('your_');
   
@@ -12,15 +16,21 @@ const getConfig = () => {
   const isNodemailerConfigured = EMAIL_USER && !EMAIL_USER.includes('your_');
   
   return {
+    isBrevoConfigured,
     isSendGridConfigured,
     isNodemailerConfigured,
-    from: process.env.EMAIL_FROM || 'noreply@dworkz.com'
+    from: process.env.EMAIL_FROM || 'noreply@dworkz.com',
+    brevoSender: {
+      name: process.env.BREVO_SENDER_NAME || 'DworkZ',
+      email: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'info.dworkzcbe@gmail.com'
+    }
   };
 };
 
 if (process.env.SENDGRID_API_KEY && !process.env.SENDGRID_API_KEY.includes('your_')) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
+
 
 // Initialize NodeMailer (with timeout to fail fast when SMTP port is blocked)
 const getTransporter = () => {
@@ -70,11 +80,45 @@ class EmailService {
    * Sends an email with an optional attachment
    */
   async sendEmail({ to, subject, html, attachment, clientId, type, attachmentName }) {
-    const { isSendGridConfigured, isNodemailerConfigured, from } = getConfig();
+    const { isBrevoConfigured, isSendGridConfigured, isNodemailerConfigured, from, brevoSender } = getConfig();
     
-    // 1. Try SendGrid if configured
+    // 1. Try Brevo if configured
+    if (isBrevoConfigured) {
+      try {
+        const payload = {
+          sender: brevoSender,
+          to: [{ email: to }],
+          subject,
+          htmlContent: html
+        };
+
+        if (attachment) {
+          const buffer = Buffer.isBuffer(attachment) ? attachment : Buffer.from(attachment);
+          payload.attachment = [{
+            content: buffer.toString('base64'),
+            name: attachmentName || 'document.pdf'
+          }];
+        }
+
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+          headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const messageId = response.data?.messageId || 'BREVO_SUCCESS';
+        await this.logEmail(clientId, to, subject, type, 'Sent', messageId, attachmentName);
+        return { success: true, method: 'Brevo' };
+      } catch (error) {
+        console.warn('Brevo failed, falling back:', error.response?.data || error.message);
+      }
+    }
+
+    // 2. Try SendGrid if configured
     if (isSendGridConfigured) {
       try {
+
         const msg = { to, from, subject, html };
         if (attachment) {
           const buffer = Buffer.isBuffer(attachment) ? attachment : Buffer.from(attachment);
