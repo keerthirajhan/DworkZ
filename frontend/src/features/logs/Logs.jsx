@@ -19,6 +19,8 @@ const timeAgo = (date) => {
   return "Just now";
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Logs = () => {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
@@ -33,7 +35,7 @@ const Logs = () => {
   const fetchLogs = async () => {
     try {
       const token = localStorage.getItem('dworkz_token');
-      const res = await axios.get('http://localhost:5000/api/v1/activities?limit=all', {
+      const res = await axios.get(`${API_URL}/api/v1/activities?limit=all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setActivities(res.data.data);
@@ -48,7 +50,7 @@ const Logs = () => {
     setIsClearingLogs(true);
     try {
       const token = localStorage.getItem('dworkz_token');
-      await axios.delete('http://localhost:5000/api/v1/activities', {
+      await axios.delete(`${API_URL}/api/v1/activities`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setActivities([]);
