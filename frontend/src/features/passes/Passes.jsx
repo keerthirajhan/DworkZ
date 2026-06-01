@@ -180,12 +180,12 @@ const Passes = () => {
     <div className="p-8 w-full max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-end mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-            <Ticket className="text-primary" size={32} />
-            Pass Management
+          <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
+            Passes Management
           </h1>
-          <p className="text-textMuted text-sm mt-1">Manage day, weekly, and hourly passes, and view history.</p>
+          <p className="text-textMuted mt-2 font-medium">Manage day, weekly, and hourly passes, and view history.</p>
         </div>
+
 
         <div className="bg-surface border border-borderSubtle p-1 rounded-xl flex gap-1">
           <button
