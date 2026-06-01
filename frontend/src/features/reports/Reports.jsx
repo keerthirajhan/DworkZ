@@ -5,8 +5,7 @@ import { motion } from 'framer-motion';
 import { BarChart2, Users, TrendingUp, Package, Calendar, Download, RefreshCw, AlertTriangle, PieChart, Activity, Zap } from 'lucide-react';
 import { RevenueBarChart, TrendLineChart, DonutChart, FunnelBars, StatCard } from './ReportCharts';
 
-const API = 'http://localhost:5000/api/v1/reports';
-const getToken = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('dworkz_token')}` } });
+import api from '../../utils/api';
 
 const TABS = [
   { id: 'financials', label: 'Financials', icon: BarChart2, description: 'Revenue, Billing & Cash Flow' },
@@ -22,14 +21,12 @@ export default function Reports() {
   const fetchAllReports = async () => {
     setLoading(true);
     try {
-      const token = getToken();
-      // We'll fetch the mapped data for our new consolidated tabs
       const [rev, clients, pipe, inv, book] = await Promise.all([
-        axios.get(`${API}/revenue`, token),
-        axios.get(`${API}/clients`, token),
-        axios.get(`${API}/pipeline`, token),
-        axios.get(`${API}/inventory`, token),
-        axios.get(`${API}/bookings`, token)
+        api.get('/api/v1/reports/revenue'),
+        api.get('/api/v1/reports/clients'),
+        api.get('/api/v1/reports/pipeline'),
+        api.get('/api/v1/reports/inventory'),
+        api.get('/api/v1/reports/bookings')
       ]);
 
       setData({

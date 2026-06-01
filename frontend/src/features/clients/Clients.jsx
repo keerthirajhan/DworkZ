@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../../utils/api';
 import { Search, Plus, MoreVertical, Filter, Mail, CheckCircle, Clock, Users, Trash2, AlertCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -47,13 +48,10 @@ const Clients = () => {
   const fetchClients = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      const res = await axios.get('http://localhost:5000/api/v1/clients', config);
+      const res = await api.get('/api/v1/clients');
       setClients(res.data.data);
 
-      const statsRes = await axios.get('http://localhost:5000/api/v1/clients/stats', config);
+      const statsRes = await api.get('/api/v1/clients/stats');
       setStats(statsRes.data.data);
     } catch (err) {
       console.error('Failed to fetch clients', err);
@@ -108,10 +106,7 @@ const Clients = () => {
       return;
     }
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post('http://localhost:5000/api/v1/clients', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/api/v1/clients', formData);
       setIsAddModalOpen(false);
       fetchClients();
       setFormData({
@@ -146,11 +141,8 @@ const Clients = () => {
     if (!clientToDelete) return;
     setIsDeleting(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
       // Call the DELETE endpoint (refactored to archive on backend)
-      await axios.delete(`http://localhost:5000/api/v1/clients/${clientToDelete._id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/v1/clients/${clientToDelete._id}`);
       setIsDeleteModalOpen(false);
       fetchClients();
       showAlert('Client Archived', `${clientToDelete.companyName} has been moved to archives for analytical tracking.`, 'success');
@@ -201,12 +193,9 @@ const Clients = () => {
   const handleSendProposal = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post('http://localhost:5000/api/v1/proposals', {
+      await api.post('/api/v1/proposals', {
         client: selectedClient._id,
         ...proposalData
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       setIsProposalModalOpen(false);
       fetchClients();
@@ -218,10 +207,7 @@ const Clients = () => {
 
   const handleActivateClient = async (id, name) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post(`http://localhost:5000/api/v1/clients/${id}/activate`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/api/v1/clients/${id}/activate`, {});
       fetchClients();
       showAlert('Activation Successful', `${name} is now an Active Member. Revenue generation has started.`, 'success');
     } catch (err) {
@@ -231,10 +217,7 @@ const Clients = () => {
 
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.patch(`http://localhost:5000/api/v1/clients/${id}`, { status: newStatus }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.patch(`/api/v1/clients/${id}`, { status: newStatus });
       fetchClients();
     } catch (err) {
       alert('Error updating status: ' + (err.response?.data?.error || err.message));

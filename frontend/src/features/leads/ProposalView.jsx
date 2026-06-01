@@ -13,7 +13,8 @@ const ProposalView = () => {
   useEffect(() => {
     const fetchProposal = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/v1/clients/public/proposal/${id}`);
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const res = await axios.get(`${API_URL}/api/v1/clients/public/proposal/${id}`);
         setClient(res.data.data);
       } catch (err) {
         setError("Proposal not found or has expired.");

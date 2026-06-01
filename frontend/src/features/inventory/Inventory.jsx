@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Plus, Package, CreditCard, ArrowDownToLine, Trash2, Edit3, CheckCircle, AlertTriangle, X, ShieldAlert, Printer, Eye, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import api from '../../utils/api';
 
 const Inventory = () => {
   const [items, setItems] = useState([]);
@@ -57,10 +58,7 @@ const Inventory = () => {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const res = await axios.get('http://localhost:5000/api/v1/inventory', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/api/v1/inventory');
       setItems(res.data.data);
     } catch (err) {
       console.error('Error fetching inventory:', err);
@@ -113,9 +111,6 @@ const Inventory = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const headers = { Authorization: `Bearer ${token}` };
-      
       const cleanedData = {
         ...formData,
         purchasedQuantity: formData.purchasedQuantity === '' ? 0 : Number(formData.purchasedQuantity),
@@ -124,10 +119,10 @@ const Inventory = () => {
       };
       
       if (modalMode === 'add') {
-        await axios.post('http://localhost:5000/api/v1/inventory', cleanedData, { headers });
+        await api.post('/api/v1/inventory', cleanedData);
         showNotify('Item added to inventory successfully');
       } else {
-        await axios.put(`http://localhost:5000/api/v1/inventory/${selectedItem._id}`, cleanedData, { headers });
+        await api.put(`/api/v1/inventory/${selectedItem._id}`, cleanedData);
         showNotify('Inventory item updated successfully');
       }
       
@@ -146,10 +141,7 @@ const Inventory = () => {
   const handleDelete = async () => {
     if (!itemToDelete) return;
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.delete(`http://localhost:5000/api/v1/inventory/${itemToDelete._id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/v1/inventory/${itemToDelete._id}`);
       showNotify('Item removed from inventory');
       setShowDeleteConfirm(false);
       setItemToDelete(null);

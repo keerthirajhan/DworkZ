@@ -5,6 +5,7 @@ import {
   X, Info, Lock, Clock, Monitor, FileSignature
 } from 'lucide-react';
 import axios from 'axios';
+import api from '../utils/api';
 
 const DigitalSignaturePad = ({ clientId, agreementId, clientName, companyName, onSuccess, onClose }) => {
   const canvasRef = useRef(null);
@@ -110,14 +111,12 @@ const DigitalSignaturePad = ({ clientId, agreementId, clientName, companyName, o
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
       const signatureImageUrl = getSignatureDataUrl();
       const deviceInfo = `${navigator.userAgent.slice(0, 80)}`;
 
-      await axios.post(
-        `http://localhost:5000/api/v1/clients/${clientId}/agreements/${agreementId}/sign`,
-        { signatureImageUrl, signedBy: signerFullName, deviceInfo },
-        { headers: { Authorization: `Bearer ${token}` } }
+      await api.post(
+        `/api/v1/clients/${clientId}/agreements/${agreementId}/sign`,
+        { signatureImageUrl, signedBy: signerFullName, deviceInfo }
       );
 
       setStep(3);

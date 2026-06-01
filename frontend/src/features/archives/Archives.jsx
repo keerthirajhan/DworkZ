@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Archive, Trash2, Clock, Search, Filter, ShieldAlert, History, UserCircle, Briefcase, TrendingUp, Bookmark, CheckCircle, AlertTriangle, X, Package, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import api from '../../utils/api';
 
 const Archives = () => {
   const [archivedItems, setArchivedItems] = useState([]);
@@ -29,15 +30,12 @@ const Archives = () => {
   const fetchArchived = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const headers = { Authorization: `Bearer ${token}` };
-      
       const [visitorRes, clientRes, bookingRes, inventoryRes, billingRes] = await Promise.allSettled([
-        axios.get('http://localhost:5000/api/v1/visitors/archived', { headers }),
-        axios.get('http://localhost:5000/api/v1/clients/archived', { headers }),
-        axios.get('http://localhost:5000/api/v1/bookings/archived', { headers }),
-        axios.get('http://localhost:5000/api/v1/inventory/archived', { headers }),
-        axios.get('http://localhost:5000/api/v1/invoices/archived', { headers })
+        api.get('/api/v1/visitors/archived'),
+        api.get('/api/v1/clients/archived'),
+        api.get('/api/v1/bookings/archived'),
+        api.get('/api/v1/inventory/archived'),
+        api.get('/api/v1/invoices/archived')
       ]);
 
       const visitors = visitorRes.status === 'fulfilled' ? (visitorRes.value.data.data || []).map(i => ({ ...i, source: 'Visitors', name: i.name })) : [];
@@ -65,7 +63,6 @@ const Archives = () => {
 
   const handlePermanentDelete = async (id, source) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
       let endpoint = '';
       if (source === 'Visitors') endpoint = 'visitors';
       else if (source === 'Clients') endpoint = 'clients';
@@ -73,9 +70,7 @@ const Archives = () => {
       else if (source === 'Inventory') endpoint = 'inventory';
       else if (source === 'Billing') endpoint = 'invoices';
       
-      await axios.delete(`http://localhost:5000/api/v1/${endpoint}/${id}/permanent`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/v1/${endpoint}/${id}/permanent`);
       
       setShowConfirmDelete(false);
       setSelectedItem(null);
@@ -88,8 +83,6 @@ const Archives = () => {
 
   const handleBulkDelete = async () => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const headers = { Authorization: `Bearer ${token}` };
       const selectedItemsData = archivedItems.filter(item => selectedIds.includes(item._id));
       const sourceGroups = selectedItemsData.reduce((acc, item) => {
         acc[item.source] = acc[item.source] || [];
@@ -100,7 +93,7 @@ const Archives = () => {
       for (const [source, ids] of Object.entries(sourceGroups)) {
         let endpoint = source === 'Billing' ? 'invoices' : source.toLowerCase();
         for(const id of ids) {
-          await axios.delete(`http://localhost:5000/api/v1/${endpoint}/${id}/permanent`, { headers });
+          await api.delete(`/api/v1/${endpoint}/${id}/permanent`);
         }
       }
 

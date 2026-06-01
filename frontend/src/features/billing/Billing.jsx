@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, FileText, Send, Download, CheckCircle, AlertCircle, Clock, Trash2, Mail, Loader2, X, ShieldCheck, Printer, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import api from '../../utils/api';
 import AlertModal from '../../components/AlertModal';
 
 // Helper to convert number to words
@@ -39,10 +40,7 @@ const Billing = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const res = await axios.get('http://localhost:5000/api/v1/invoices', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/api/v1/invoices');
       setInvoices(res.data.data || []);
     } catch (err) {
       console.error('Error fetching invoices:', err);
@@ -62,10 +60,7 @@ const Billing = () => {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const token = localStorage.getItem('dworkz_token');
-      const res = await axios.post('http://localhost:5000/api/v1/invoices/generate', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.post('/api/v1/invoices/generate', {});
       showNotify(res.data.message);
       setShowGenModal(false);
       fetchInvoices();
@@ -78,10 +73,7 @@ const Billing = () => {
 
   const handleSendEmail = async (id) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post(`http://localhost:5000/api/v1/invoices/${id}/send`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/api/v1/invoices/${id}/send`, {});
       showNotify('Tax invoice delivered successfully.');
       fetchInvoices();
     } catch (err) {
@@ -91,10 +83,7 @@ const Billing = () => {
 
   const handleMarkAsPaid = async (id) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post(`http://localhost:5000/api/v1/invoices/${id}/mark-paid`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/api/v1/invoices/${id}/mark-paid`, {});
       showNotify('Payment received and invoice updated.');
       fetchInvoices();
     } catch (err) {
@@ -104,10 +93,7 @@ const Billing = () => {
 
   const handleMarkInvoiceSent = async (id) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.post(`http://localhost:5000/api/v1/invoices/${id}/mark-sent`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post(`/api/v1/invoices/${id}/mark-sent`, {});
       showNotify('Invoice marked as manually sent.');
       fetchInvoices();
     } catch (err) {
@@ -117,10 +103,7 @@ const Billing = () => {
 
   const handleDeleteInvoice = async (id) => {
     try {
-      const token = localStorage.getItem('dworkz_token');
-      await axios.delete(`http://localhost:5000/api/v1/invoices/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/v1/invoices/${id}`);
       showNotify('Invoice moved to archives.');
       fetchInvoices();
     } catch (err) {
