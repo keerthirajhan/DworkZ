@@ -3,6 +3,8 @@ const Client = require('../models/Client');
 const Booking = require('../models/Booking');
 const Visitor = require('../models/Visitor');
 const logActivity = require('../utils/activityLogger');
+const emailService = require('../services/emailService');
+const invoiceTemplate = require('../templates/invoiceTemplate');
 
 // Helper to convert number to words (Simplified for INR)
 const numberToWords = (num) => {
@@ -60,7 +62,16 @@ exports.generateInvoices = async (req, res) => {
     const billingPeriod = now.toLocaleString('default', { month: 'long', year: 'numeric' });
     
     const clients = await Client.find({ status: 'Active', isArchived: { $ne: true } });
-    const baseCount = await Invoice.countDocuments();
+    const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
+    let baseSequenceNum = 0;
+    if (lastInvoice && lastInvoice.invoiceId) {
+      const parts = lastInvoice.invoiceId.split('-');
+      const lastSeqStr = parts[parts.length - 1];
+      const lastSeq = parseInt(lastSeqStr, 10);
+      if (!isNaN(lastSeq)) {
+        baseSequenceNum = lastSeq;
+      }
+    }
 
     let count = 0;
     for (const client of clients) {
@@ -86,7 +97,7 @@ exports.generateInvoices = async (req, res) => {
       const totalAmount = Number((subTotal + cgstAmount + sgstAmount).toFixed(2));
 
       // Professional Sequential ID Format: DWZ-INV-YYYY-XXXX
-      const sequence = (baseCount + count + 1).toString().padStart(4, '0');
+      const sequence = (baseSequenceNum + count + 1).toString().padStart(4, '0');
       const invoiceId = `DWZ-INV-${now.getFullYear()}-${sequence}`;
 
       // Intelligent Due Date: 10th of current month or 10 days from today if late
@@ -145,11 +156,19 @@ exports.generateGuestInvoice = async (req, res) => {
     const duration = Number(booking.duration) || 0;
     const totalAmount = duration * rate;
 
-    const now = new Date();
-    const baseCount = await Invoice.countDocuments();
-    const sequence = (baseCount + 1).toString().padStart(4, '0');
-    // Professional Format: DWZ-GST-YYYY-XXXX
-    const invoiceId = `DWZ-GST-${now.getFullYear()}-${sequence}`;
+    const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
+    let sequenceNum = 1;
+    if (lastInvoice && lastInvoice.invoiceId) {
+      const parts = lastInvoice.invoiceId.split('-');
+      const lastSeqStr = parts[parts.length - 1];
+      const lastSeq = parseInt(lastSeqStr, 10);
+      if (!isNaN(lastSeq)) {
+        sequenceNum = lastSeq + 1;
+      }
+    }
+    const sequence = sequenceNum.toString().padStart(4, '0');
+    // Professional Format: DWZ-INV-YYYY-XXXX
+    const invoiceId = `DWZ-INV-${now.getFullYear()}-${sequence}`;
 
     const invoice = await Invoice.create({
       invoiceId,
@@ -180,9 +199,60 @@ exports.generateGuestInvoice = async (req, res) => {
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };
 
-// @desc    Deliver invoice via email (DISABLED FOR NOW)
+// @desc    Deliver invoice via email
 exports.sendInvoice = async (req, res) => {
-  res.status(403).json({ success: false, message: 'Automated email delivery is currently disabled.' });
+  try {
+    const invoice = await Invoice.findById(req.params.id).populate('clientId');
+    if (!invoice) return res.status(404).json({ success: false, error: 'Invoice not found' });
+    if (!invoice.clientId) return res.status(400).json({ success: false, error: 'No client associated with this invoice' });
+
+    const client = invoice.clientId;
+
+    const emailHtml = invoiceTemplate({
+      name: client.name || client.companyName,
+      invoiceNumber: invoice.invoiceId,
+      period: invoice.billingPeriod,
+      amount: invoice.totalAmount,
+      dueDate: new Date(invoice.dueDate).toLocaleDateString(),
+      status: invoice.status,
+      ctaLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invoices/${invoice._id}`
+    });
+
+    let pdfBuffer;
+    try {
+      pdfBuffer = await emailService.generatePDF(emailHtml, `Invoice_${invoice.invoiceId}.pdf`);
+    } catch (e) {
+      console.error('Failed to generate PDF for invoice', e);
+    }
+
+    await emailService.sendEmail({
+      to: client.contactEmail,
+      subject: `Invoice ${invoice.invoiceId} from DworkZ`,
+      html: emailHtml,
+      attachment: pdfBuffer,
+      attachmentName: `Invoice_${invoice.invoiceId}.pdf`,
+      clientId: client._id,
+      type: 'Invoice'
+    });
+
+    invoice.sent = true;
+    invoice.sentDate = Date.now();
+    await invoice.save();
+
+    await logActivity({
+      title: 'Invoice Sent',
+      desc: `Tax Invoice ${invoice.invoiceId} sent to ${client.companyName} via Email`,
+      type: 'payment',
+      user: req.user ? req.user.id : null,
+      userName: req.user ? req.user.name : 'System',
+      color: 'bg-primary'
+    });
+
+    res.status(200).json({ success: true, message: 'Invoice email sent successfully.' });
+  } catch (error) {
+    console.error('Send Invoice Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 };
 
 // @desc    Mark Invoice as Manually Sent (Offline)
@@ -273,7 +343,7 @@ exports.updateInvoice = async (req, res) => {
 
 exports.generateVisitorInvoice = async (req, res) => {
   try {
-    const { amount, applyGst } = req.body;
+    const { amount, applyGst, serviceDate, issueDate, numberOfDays } = req.body;
     const visitor = await Visitor.findById(req.params.visitorId);
     if (!visitor) return res.status(404).json({ success: false, error: 'Visitor not found' });
     
@@ -287,7 +357,8 @@ exports.generateVisitorInvoice = async (req, res) => {
       });
     }
 
-    const baseAmount = Number(amount) || 0;
+    const days = Math.max(1, Number(numberOfDays) || 1);
+    const baseAmount = (Number(amount) || 0) * days;
     let cgstAmount = 0;
     let sgstAmount = 0;
     let totalAmount = baseAmount;
@@ -299,9 +370,25 @@ exports.generateVisitorInvoice = async (req, res) => {
     }
 
     const now = new Date();
-    const baseCount = await Invoice.countDocuments();
-    const sequence = (baseCount + 1).toString().padStart(4, '0');
-    const invoiceId = `DWZ-GST-${now.getFullYear()}-${sequence}`;
+    const finalIssueDate = issueDate ? new Date(issueDate) : now;
+    const finalServiceDate = serviceDate ? new Date(serviceDate) : finalIssueDate;
+
+    // Calculate serviceEndDate
+    const finalServiceEndDate = new Date(finalServiceDate);
+    finalServiceEndDate.setDate(finalServiceEndDate.getDate() + (days - 1));
+
+    const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
+    let sequenceNum = 1;
+    if (lastInvoice && lastInvoice.invoiceId) {
+      const parts = lastInvoice.invoiceId.split('-');
+      const lastSeqStr = parts[parts.length - 1];
+      const lastSeq = parseInt(lastSeqStr, 10);
+      if (!isNaN(lastSeq)) {
+        sequenceNum = lastSeq + 1;
+      }
+    }
+    const sequence = sequenceNum.toString().padStart(4, '0');
+    const invoiceId = `DWZ-INV-${now.getFullYear()}-${sequence}`;
 
     const invoice = await Invoice.create({
       invoiceId,
@@ -313,7 +400,11 @@ exports.generateVisitorInvoice = async (req, res) => {
       sgstAmount,
       overageAmount: 0,
       totalAmount,
-      dueDate: now,
+      serviceDate: finalServiceDate,
+      serviceEndDate: finalServiceEndDate,
+      numberOfDays: days,
+      issueDate: finalIssueDate,
+      dueDate: finalIssueDate,
       status: 'Pending'
     });
 

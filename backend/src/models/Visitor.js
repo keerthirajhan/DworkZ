@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 const VisitorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   companyName: { type: String },
-  personToVisit: { type: String, required: true },
+  companyAddress: { type: String },
+  gstNumber: { type: String },
+  personToVisit: { type: String },
   purpose: { type: String, enum: ['Meeting', 'Day Pass', 'Hourly Pass', 'Vendor / Maintenance', 'Weekly Pass', 'Others'], required: true },
   email: { type: String, required: true },
   aadharNumber: { type: String, required: true },

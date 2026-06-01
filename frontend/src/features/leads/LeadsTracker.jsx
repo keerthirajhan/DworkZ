@@ -39,7 +39,7 @@ const LeadsTracker = () => {
     totalPrice: 0,
     workspaceType: 'Individual Seat',
     workspaceDetails: '',
-    subject: 'Workspace Proposal from DWorkz',
+    subject: 'Workspace Proposal from DworkZ',
     emailBody: '',
     pdfData: null // Store base64 PDF
   });
@@ -142,11 +142,11 @@ const LeadsTracker = () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pd = lead.pricingDetails || { pricePerSeat: 0, totalPrice: 0, discount: 0 };
 
-    // 1. HEADER (Dworkz. + Contact)
+    // 1. HEADER (DworkZ. + Contact)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(28);
     doc.setTextColor(20, 184, 166); // Teal
-    doc.text("Dworkz.", 20, 30);
+    doc.text("DworkZ.", 20, 30);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -178,7 +178,7 @@ const LeadsTracker = () => {
     // 3. LETTER CONTENT
     doc.setFontSize(11);
     doc.text("Dear Partner,", 20, 120);
-    doc.text("Thank you for choosing DWorkz. We are pleased to provide workspace details and pricing", 20, 128);
+    doc.text("Thank you for choosing DworkZ. We are pleased to provide workspace details and pricing", 20, 128);
     doc.text("tailored for your team. Our facilities are designed to boost productivity and collaboration.", 20, 134);
 
     // 4. PRICING TABLE
@@ -347,8 +347,16 @@ const LeadsTracker = () => {
       preferredDate: client.preferredDate, // Capture preferred start date
       workspaceType: client.workspaceType || 'Individual Seat',
       workspaceDetails: client.workspaceDetails || '',
-      subject: 'Workspace Proposal from DWorkz',
-      emailBody: `Hi ${client.name},\n\nThank you for inquiring about DWorkz Workspace. We are excited to offer you a professional ${client.workspaceType} for ${seatsCount} seats.\n\nPlease find the attached proposal for your review. We look forward to having ${client.companyName} at our space!\n\nBest Regards,\nTeam DWorkz`,
+      subject: 'Workspace Proposal from DworkZ',
+      emailBody: `Please find the attached workspace proposal for your review. Thank you for considering DworkZ as your workspace partner.
+
+At DworkZ, we believe a workspace should be more than just a place to work—it should inspire productivity, collaboration, and growth. Our facilities are designed to enhance your work experience with high-speed internet, premium amenities, modern infrastructure, and a vibrant professional community.
+
+Whether you are a freelancer, startup, or growing business, DworkZ provides a flexible and professional environment tailored to your needs, helping you focus on what matters most—growing your business and achieving success.
+
+We look forward to welcoming you to the DworkZ community and building a long-term partnership with you.
+
+Thank you for your interest in DworkZ.`,
       pdfData: null
     });
     setIsProposalModalOpen(true);
@@ -358,11 +366,11 @@ const LeadsTracker = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // 1. HEADER (Dworkz. + Contact)
+    // 1. HEADER (DworkZ. + Contact)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(28);
     doc.setTextColor(20, 184, 166); // Teal
-    doc.text("Dworkz.", 20, 30);
+    doc.text("DworkZ.", 20, 30);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -394,7 +402,7 @@ const LeadsTracker = () => {
     // 3. LETTER CONTENT
     doc.setFontSize(11);
     doc.text("Dear Partner,", 20, 125);
-    doc.text("Thank you for choosing DWorkz. We are pleased to provide workspace details and pricing", 20, 135);
+    doc.text("Thank you for choosing DworkZ. We are pleased to provide workspace details and pricing", 20, 135);
     doc.text("tailored for your team. Our facilities are designed to boost productivity and collaboration.", 20, 142);
 
     // 4. PRICING TABLE (Teal Header)
@@ -1059,10 +1067,13 @@ const LeadsTracker = () => {
                           <label className="text-[10px] font-black text-primary uppercase tracking-widest">{field.label}</label>
                           <input type={field.type} value={proposalData[field.key]}
                             onChange={(e) => {
-                              const val = Number(e.target.value);
+                              const rawVal = e.target.value;
+                              const val = rawVal === '' ? '' : Number(rawVal);
                               setProposalData(prev => {
                                 const next = {...prev, [field.key]: val};
-                                next.totalPrice = Math.max(0, next.pricePerSeat * next.seats);
+                                const seats = next.seats === '' ? 0 : Number(next.seats);
+                                const price = next.pricePerSeat === '' ? 0 : Number(next.pricePerSeat);
+                                next.totalPrice = Math.max(0, price * seats);
                                 return next;
                               });
                             }}
@@ -1091,7 +1102,7 @@ const LeadsTracker = () => {
                         <div className="flex justify-between items-start mb-8">
                           <div>
                             <div className="flex items-center mb-1">
-                              <h1 className="text-3xl font-bold text-primary tracking-tight">Dworkz</h1>
+                              <h1 className="text-3xl font-bold text-primary tracking-tight">DworkZ</h1>
                               <span className="w-1.5 h-1.5 bg-primary rounded-full mt-3"></span>
                             </div>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">GST No. 33AAZFD3031H1ZG</p>

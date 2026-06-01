@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import Clients from './features/clients/Clients';
 import ClientDetail from './features/clients/ClientDetail';
 import Visitors from './features/visitors/Visitors';
+import Passes from './features/passes/Passes';
 import Inventory from './features/inventory/Inventory';
 import Billing from './features/billing/Billing';
 import Bookings from './features/bookings/Bookings';
@@ -18,7 +19,7 @@ import ProposalView from './features/leads/ProposalView';
 import ClientPortalLogin from './features/client-portal/ClientPortalLogin';
 import ClientPortalDashboard from './features/client-portal/ClientPortalDashboard';
 // import Reports from './features/reports/Reports';
-import { Home, Users, Briefcase, Box, FileText, Settings, Bell, Search, UserCircle, Calendar, TrendingUp, Archive, BarChart2 } from 'lucide-react';
+import { Home, Users, Briefcase, Box, FileText, Settings, Bell, Search, UserCircle, Calendar, TrendingUp, Archive, BarChart2, Ticket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { io } from 'socket.io-client';
 
@@ -28,6 +29,7 @@ const Sidebar = ({ onLogout, profileData }) => {
     { name: 'Dashboard', path: '/', icon: Home },
     { name: 'Leads Management', path: '/leads', icon: TrendingUp },
     { name: 'Clients', path: '/clients', icon: Users },
+    { name: 'Passes', path: '/passes', icon: Ticket },
     { name: 'Visitors', path: '/visitors', icon: UserCircle },
     { name: 'Bookings', path: '/bookings', icon: Calendar },
     { name: 'Inventory', path: '/inventory', icon: Box },
@@ -316,6 +318,7 @@ function App() {
                 <Route path="/leads" element={<LeadsTracker />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/clients/:id" element={<ClientDetail />} />
+                <Route path="/passes" element={<Passes />} />
                 <Route path="/visitors" element={<Visitors />} />
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/inventory" element={<Inventory />} />

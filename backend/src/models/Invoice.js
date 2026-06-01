@@ -13,6 +13,10 @@ const InvoiceSchema = new mongoose.Schema({
   overageAmount: { type: Number, default: 0 },
   totalAmount: { type: Number, required: true },
   status: { type: String, enum: ['Paid', 'Pending', 'Overdue'], default: 'Pending' },
+  serviceDate: { type: Date },   // Date the client actually used the service
+  serviceEndDate: { type: Date }, // End date if multiple days
+  numberOfDays: { type: Number, default: 1 },
+  issueDate: { type: Date, default: Date.now },     // Date the invoice is formally issued
   dateGenerated: { type: Date, default: Date.now },
   dueDate: { type: Date, required: true },
   sent: { type: Boolean, default: false },

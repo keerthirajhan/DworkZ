@@ -37,7 +37,7 @@ const Login = ({ setToken }) => {
         <div className="flex flex-col items-center mb-8">
           <div className="flex flex-col justify-center items-center mb-6">
             <div className="text-4xl font-bold text-textMain tracking-tight flex items-baseline leading-none">
-              Dworkz<span className="text-teal-500 text-5xl leading-[0]">.</span>
+              DworkZ<span className="text-teal-500 text-5xl leading-[0]">.</span>
             </div>
             <div className="text-[0.65rem] tracking-[0.45em] text-textMuted ml-1 font-medium mt-1 uppercase">
               WORKSPACE

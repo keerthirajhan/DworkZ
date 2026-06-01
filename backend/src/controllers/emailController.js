@@ -1,6 +1,7 @@
 const emailService = require('../services/emailService');
 const Client = require('../models/Client');
 const proposalTemplate = require('../templates/proposalTemplate');
+const proposalPdfTemplate = require('../templates/proposalPdfTemplate');
 const invoiceTemplate = require('../templates/invoiceTemplate');
 const agreementTemplate = require('../templates/agreementTemplate');
 
@@ -36,7 +37,8 @@ exports.sendProposal = async (req, res) => {
       if (pdfHtml && pdfHtml !== "") {
         finalPdfBuffer = await emailService.generatePDF(pdfHtml, `Proposal_${client.companyName}.pdf`);
       } else {
-        finalPdfBuffer = await emailService.generatePDF(emailHtml, `Proposal_${client.companyName}.pdf`);
+        const pdfHtmlContent = proposalPdfTemplate(templateData);
+        finalPdfBuffer = await emailService.generatePDF(pdfHtmlContent, `Proposal_${client.companyName}.pdf`);
       }
     } catch (pdfErr) {
       console.error('PDF Generation failed, sending email without attachment:', pdfErr);

@@ -50,8 +50,9 @@ class EmailService {
       await page.setContent(html, { waitUntil: 'domcontentloaded' });
       const pdfBuffer = await page.pdf({
         format: 'A4',
-        margin: { top: '20mm', right: '20mm', bottom: '20mm', left: '20mm' },
-        printBackground: true
+        margin: { top: '5mm', right: '5mm', bottom: '5mm', left: '5mm' },
+        printBackground: true,
+        scale: 0.9
       });
       return pdfBuffer;
     } catch (error) {

@@ -454,7 +454,7 @@ exports.sendAgreementEmail = async (req, res, next) => {
     const templateData = {
       name: client.name,
       companyName: client.companyName,
-      ctaLink: `http://localhost:5173/agreement/sign/${agreement._id}`, // Public sign link
+      ctaLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/agreement/sign/${agreement._id}`, // Public sign link
     };
 
     // 2. Generate Email Body

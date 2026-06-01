@@ -48,7 +48,7 @@ const ProposalView = () => {
         <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
           <div>
             <div className="flex items-center mb-2">
-              <h1 className="text-4xl font-bold text-primary tracking-tight">Dworkz</h1>
+              <h1 className="text-4xl font-bold text-primary tracking-tight">DworkZ</h1>
               <span className="w-2 h-2 bg-primary rounded-full mt-4"></span>
             </div>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">GST No. 33AAZFD3031H1ZG</p>

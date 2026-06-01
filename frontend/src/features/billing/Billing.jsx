@@ -307,7 +307,7 @@ const Billing = () => {
 
                   <div className="p-10 overflow-y-auto custom-scrollbar flex-1" ref={printRef}>
                     <div className="border border-black bg-white">
-                           <div className="text-sm font-bold text-gray-800 p-2 border-b border-black">DworkZ - {selectedInvoice.isGuest ? 'Visitor Session' : 'Client Invoice'}</div>
+                      <div className="text-sm font-bold text-gray-800 p-2 border-b border-black">DworkZ - Client Invoice</div>
                       <div className="grid grid-cols-2 border-b border-black">
                         <div className="p-4 border-r border-black space-y-3">
                            <div className="items-center gap-3">
@@ -321,47 +321,102 @@ const Billing = () => {
                               <div className="p-3 h-full"><p className="text-[9px] font-black uppercase text-gray-400">Dated</p><p className="font-black text-xs text-gray-800 mt-1">{new Date(selectedInvoice.dateGenerated).toLocaleDateString()}</p></div>
                            </div>
                            {!['Individual Seat', 'Cabin'].includes(selectedInvoice.clientId?.workspaceType) && (
-                             <div className="p-3 flex-1">
-                                <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
-                                <p className="font-black text-xs text-gray-800 mt-1">Paid in Full/One-Time</p>
-                              </div>
+                             <div className="grid grid-cols-2 flex-1">
+                                <div className="p-3 border-r border-black h-full">
+                                  <p className="text-[9px] font-black uppercase text-gray-400">Terms of Payment</p>
+                                  <p className="font-black text-xs text-gray-800 mt-1">Paid in Full/One-Time</p>
+                                </div>
+                                <div className="p-3 h-full">
+                                  <p className="text-[9px] font-black uppercase text-gray-400">Billed for Date</p>
+                                  <p className="font-black text-xs text-gray-800 mt-1">
+                                    {selectedInvoice.serviceDate 
+                                      ? (selectedInvoice.numberOfDays > 1 && selectedInvoice.serviceEndDate
+                                          ? `${new Date(selectedInvoice.serviceDate).toLocaleDateString('en-IN')} - ${new Date(selectedInvoice.serviceEndDate).toLocaleDateString('en-IN')}`
+                                          : new Date(selectedInvoice.serviceDate).toLocaleDateString('en-IN')
+                                        )
+                                      : 'N/A'
+                                    }
+                                  </p>
+                                </div>
+                             </div>
                            )}
                         </div>
                       </div>
 
                       <div className="border-b border-black">
-                        <div className="p-4"><p className="text-[9px] font-black uppercase text-gray-400 mb-2">BILL TO</p><h4 className="font-black text-sm text-gray-800 uppercase">{selectedInvoice.clientId?.companyName || selectedInvoice.bookingId?.clientName || selectedInvoice.visitorId?.name || 'Visitor'}</h4><div className="text-[10px] text-gray-600 font-bold mt-1 leading-relaxed">{selectedInvoice.clientId?.billingDetails?.billingAddress || selectedInvoice.bookingId?.guestDetails?.phone || selectedInvoice.visitorId?.email || 'N/A'}{selectedInvoice.clientId?.billingDetails?.gstNumber && <><br/>GSTIN: {selectedInvoice.clientId.billingDetails.gstNumber}</>}</div></div>
+                        <div className="p-4">
+                          <p className="text-[9px] font-black uppercase text-gray-400 mb-2">BILL TO</p>
+                          <h4 className="font-black text-sm text-gray-800 uppercase">
+                            {selectedInvoice.visitorId 
+                              ? (selectedInvoice.visitorId.companyName || 'Individual / Walk-in') 
+                              : (selectedInvoice.clientId?.companyName || selectedInvoice.bookingId?.clientName || 'Visitor')
+                            }
+                          </h4>
+                          <div className="text-[10px] text-gray-600 font-bold mt-1 leading-relaxed">
+                            {selectedInvoice.visitorId 
+                              ? (selectedInvoice.visitorId.companyAddress || 'N/A') 
+                              : (selectedInvoice.clientId?.billingDetails?.billingAddress || selectedInvoice.bookingId?.guestDetails?.phone || 'N/A')
+                            }
+                            {selectedInvoice.visitorId ? (
+                              selectedInvoice.visitorId.gstNumber && <><br/>GSTIN: {selectedInvoice.visitorId.gstNumber}</>
+                            ) : (
+                              selectedInvoice.clientId?.billingDetails?.gstNumber && <><br/>GSTIN: {selectedInvoice.clientId.billingDetails.gstNumber}</>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
                       <table className="w-full text-left text-[10px] border-b border-black">
                          <thead><tr className="font-black uppercase tracking-widest text-center border-b border-black"><td className="p-2 border-r border-black w-12 whitespace-nowrap">S.No.</td><td className="p-2 border-r border-black">Particulars</td><td className="p-2 border-r border-black w-32">Type</td><td className="p-2 border-r border-black w-32">Rate</td><td className="p-2 w-32">Amount</td></tr></thead>
                         <tbody className="font-bold text-gray-700">
                           {(() => {
+                            const isVisitor = !!selectedInvoice.visitorId;
                             const plan = selectedInvoice.clientId?.planType || 'Monthly';
                             const baseAmt = Number(selectedInvoice.baseAmount) || 0;
                             
-                            if (plan === 'Daily' && baseAmt > 450) {
-                              const numDays = Math.round(baseAmt / 450);
+                            const isDailyPlanSplit = plan === 'Daily' && baseAmt > 450;
+                            const isVisitorSplit = isVisitor && (selectedInvoice.numberOfDays > 1);
+                            
+                            if (isVisitorSplit || isDailyPlanSplit) {
+                              const days = isVisitorSplit 
+                                ? (selectedInvoice.numberOfDays || 1) 
+                                : Math.round(baseAmt / 450);
+                              
+                              const dailyRate = isVisitorSplit 
+                                ? (baseAmt / days) 
+                                : 450;
+                                
                               const rows = [];
-                              for (let i = 1; i <= numDays; i++) {
+                              for (let i = 1; i <= days; i++) {
+                                const dayDate = new Date(selectedInvoice.serviceDate || selectedInvoice.dateGenerated);
+                                dayDate.setDate(dayDate.getDate() + (i - 1));
+                                const formattedDateStr = dayDate.toLocaleDateString('en-IN');
+                                
                                 rows.push(
-                                  <tr key={`day-${i}`} className="align-top border-b border-black/10">
+                                  <tr key={`day-${i}`} className="align-top border-b border-black/10 text-gray-700">
                                     <td className="p-4 border-r border-black text-center">{i}</td>
                                     <td className="p-4 border-r border-black">
-                                      <div className="font-black text-gray-800 text-xs">
-                                        {`Day pass rental charges - Day ${i}`}
+                                      <div className="font-black text-gray-800 text-xs mb-1">
+                                        {selectedInvoice.visitorId 
+                                          ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges - Day ${i}` 
+                                          : `Day pass rental charges - Day ${i}`}
+                                      </div>
+                                      <div className="text-[9px] italic text-gray-400">
+                                        Billed for {formattedDateStr}
                                       </div>
                                     </td>
                                     <td className="p-4 border-r border-black text-center">Rental</td>
-                                    <td className="p-4 border-r border-black text-right">₹450</td>
-                                    <td className="p-4 text-right">₹450</td>
+                                    <td className="p-4 border-r border-black text-right">₹{dailyRate.toLocaleString()}</td>
+                                    <td className="p-4 text-right">₹{dailyRate.toLocaleString()}</td>
                                   </tr>
                                 );
                               }
                               return rows;
                             } else {
+                              const days = selectedInvoice.numberOfDays || 1;
+                              const dailyRate = isVisitor ? (selectedInvoice.baseAmount / days) : selectedInvoice.baseAmount;
                               return (
-                                <tr className="h-40 align-top">
+                                <tr className="h-40 align-top text-gray-700">
                                   <td className="p-4 border-r border-black text-center">1</td>
                                   <td className="p-4 border-r border-black">
                                     <div className="font-black text-gray-800 text-xs mb-1">
@@ -370,15 +425,11 @@ const Billing = () => {
                                     <div className="text-[9px] italic text-gray-400">
                                       {(() => {
                                         if (selectedInvoice.visitorId) {
-                                          return `One-time visitor session pass for ${selectedInvoice.visitorId.name}`;
+                                          return `Billed for ${new Date(selectedInvoice.serviceDate).toLocaleDateString('en-IN')}`;
                                         }
                                         if (selectedInvoice.isGuest) {
                                           return 'One-time session reservation';
                                         }
-                                        if (plan === 'Daily') {
-                                          return "";
-                                        }
-                                        
                                         const workspaceType = selectedInvoice.clientId?.workspaceType;
                                         if (workspaceType === 'Virtual Office') {
                                           return `One-Time Virtual Office Registration / Payment`;
@@ -389,13 +440,14 @@ const Billing = () => {
                                         if (workspaceType === 'Individual Seat') {
                                           return `Monthly Dedicated Seat Rental Charges for ${selectedInvoice.billingPeriod}`;
                                         }
-                                        
                                         return `Monthly Workspace Rental Charges for ${selectedInvoice.billingPeriod}`;
                                       })()}
                                     </div>
                                   </td>
                                   <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest ? 'Service' : 'Rental'}</td>
-                                  <td className="p-4 border-r border-black text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
+                                  <td className="p-4 border-r border-black text-right">
+                                    ₹{dailyRate.toLocaleString()}
+                                  </td>
                                   <td className="p-4 text-right">₹{selectedInvoice.baseAmount.toLocaleString()}</td>
                                 </tr>
                               );
