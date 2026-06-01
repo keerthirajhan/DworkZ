@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Client = require('./models/Client');
 
-dotenv.config({ path: '../.env' });
+const path = require('path');
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/dworkz');
 
 const seedData = async () => {
