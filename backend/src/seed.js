@@ -41,7 +41,7 @@ const seedData = async () => {
         workspaceType: 'Desk',
         workspaceDetails: 'Desk 12',
         rentAmount: 50,
-        status: 'Lead',
+        status: 'New Lead',
         userId: admin._id
       }
     ]);
