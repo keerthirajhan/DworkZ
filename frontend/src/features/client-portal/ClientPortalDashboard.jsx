@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, X, CheckCircle, XCircle, AlertCircle, Plus, Archive, Settings, LogOut, Home, ChevronRight, Trash2 } from 'lucide-react';
+import { Calendar, Clock, X, CheckCircle, XCircle, AlertCircle, Plus, Archive, Settings, LogOut, Home, ChevronRight, Trash2, Menu } from 'lucide-react';
 
 const ROOMS = ['Meeting Room'];
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
@@ -10,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const ClientPortalDashboard = ({ client, token, onLogout }) => {
   const [activeTab, setActiveTab] = useState('bookings');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -116,18 +117,42 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-background flex">
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="portal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <div className="w-64 border-r border-borderSubtle bg-background hidden md:flex flex-col">
-        <div className="h-24 flex flex-col justify-center px-8">
-          <div className="text-3xl font-bold text-textMain tracking-tighter flex items-baseline leading-none">
-            DworkZ<span className="text-primary text-4xl leading-[0] ml-0.5">.</span>
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-64 border-r border-borderSubtle bg-background flex flex-col
+        transition-transform duration-300 ease-in-out
+        md:static md:translate-x-0
+        ${menuOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="h-24 flex items-center justify-between px-6 md:px-8">
+          <div className="flex flex-col justify-center">
+            <div className="text-2xl md:text-3xl font-bold text-textMain tracking-tighter flex items-baseline leading-none">
+              DworkZ<span className="text-primary text-3xl md:text-4xl leading-[0] ml-0.5">.</span>
+            </div>
+            <div className="text-[0.6rem] tracking-[0.6em] text-primary/60 ml-0.5 font-bold mt-2 uppercase">Member Portal</div>
           </div>
-          <div className="text-[0.6rem] tracking-[0.6em] text-primary/60 ml-0.5 font-bold mt-2 uppercase">Member Portal</div>
+          <button onClick={() => setMenuOpen(false)} className="md:hidden p-2 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors">
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 space-y-1.5 mt-4">
           {navItems.map(({ key, label, icon: Icon }) => (
-            <button key={key} onClick={() => setActiveTab(key)}
+            <button key={key} onClick={() => { setActiveTab(key); setMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === key ? 'bg-primary/10 text-primary' : 'text-textMuted hover:text-textMain hover:bg-surface'}`}>
               <Icon size={18} />
               {label}
@@ -153,11 +178,16 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Topbar */}
-        <header className="h-16 border-b border-borderSubtle flex items-center justify-between px-8">
-          <div className="text-xs text-textMuted flex items-center gap-2">
-            <span>Portal</span>
-            <ChevronRight size={12} />
-            <span className="text-textMain font-bold capitalize">{activeTab}</span>
+        <header className="h-16 border-b border-borderSubtle flex items-center justify-between px-4 sm:px-8">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMenuOpen(true)} className="md:hidden p-1.5 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors">
+              <Menu size={20} />
+            </button>
+            <div className="text-xs text-textMuted flex items-center gap-2">
+              <span>Portal</span>
+              <ChevronRight size={12} />
+              <span className="text-textMain font-bold capitalize">{activeTab}</span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
@@ -167,7 +197,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-[300px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
           {/* ── BOOKINGS TAB ── */}
@@ -216,7 +246,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                     </button>
                   </div>
                 ) : upcomingBookings.map(b => (
-                  <div key={b._id} className="px-6 py-4 border-b border-borderSubtle last:border-0 flex items-center justify-between group hover:bg-primary/5 transition-colors">
+                  <div key={b._id} className="px-4 sm:px-6 py-4 border-b border-borderSubtle last:border-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 group hover:bg-primary/5 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
                         <Calendar size={18} className="text-primary" />
@@ -229,10 +259,10 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                       <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">Confirmed</span>
                       <button onClick={() => handleCancel(b._id)}
-                        className="opacity-0 group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-all text-[10px] font-black uppercase tracking-widest">Cancel</button>
+                        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-all text-[10px] font-black uppercase tracking-widest">Cancel</button>
                     </div>
                   </div>
                 ))}
@@ -257,7 +287,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                     <p className="text-textMuted text-sm">No archived bookings yet</p>
                   </div>
                 ) : archivedBookings.map(b => (
-                  <div key={b._id} className="px-6 py-4 border-b border-borderSubtle last:border-0 flex items-center justify-between">
+                  <div key={b._id} className="px-4 sm:px-6 py-4 border-b border-borderSubtle last:border-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
                     <div className="flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${b.status === 'Cancelled' ? 'bg-rose-500/10' : 'bg-surface'}`}>
                         {b.status === 'Cancelled' ? <XCircle size={18} className="text-rose-400" /> : <CheckCircle size={18} className="text-slate-400" />}
@@ -270,7 +300,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                       <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${b.status === 'Cancelled' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'}`}>
                         {b.status === 'Cancelled' ? 'Cancelled' : 'Completed'}
                       </span>
@@ -296,7 +326,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
               {/* Profile Card */}
               <div className="bg-surface border border-borderSubtle rounded-3xl p-6 space-y-4">
                 <h2 className="text-xs font-black text-textMuted uppercase tracking-widest">Account Information</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     { label: 'Company', value: client.companyName },
                     { label: 'Contact Name', value: client.name },
