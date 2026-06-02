@@ -202,7 +202,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Nav */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="lg:col-span-1 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-3 lg:pb-0 scrollbar-none">
           {[
             { name: 'Appearance', icon: Palette },
             { name: 'Profile', icon: User },
@@ -213,7 +213,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
             <button 
               key={item.name}
               onClick={() => setActiveTab(item.name)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+              className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                 activeTab === item.name 
                   ? 'bg-primary/10 text-primary border border-primary/20' 
                   : 'text-textMuted hover:text-textMain hover:bg-surface'
@@ -321,8 +321,8 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-8">
-                <label className="relative group cursor-pointer">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                <label className="relative group cursor-pointer flex-shrink-0">
                   <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   <div className="w-32 h-32 rounded-3xl bg-background border-2 border-dashed border-primary/20 flex flex-col items-center justify-center text-primary hover:border-primary hover:bg-primary/5 transition-all overflow-hidden">
                     {profileData.logoUrl ? (
@@ -338,7 +338,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                     </div>
                   </div>
                 </label>
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 w-full space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Full Name</label>

@@ -233,66 +233,68 @@ const Dashboard = () => {
           </div>
           
           <div className="mt-8">
-            <div className="relative">
-              {/* Timeline Header */}
-              <div className="flex justify-between text-[10px] font-black text-textMuted uppercase tracking-wider mb-2">
-                {[9,10,11,12,1,2,3,4,5,6,7,8,9].map((hour, i) => (
-                  <span key={i} className="flex-1 text-center">{hour} {i < 3 || i === 12 ? 'AM' : 'PM'}</span>
-                ))}
-              </div>
-              
-              {/* Timeline Track */}
-              <div className="h-14 timeline-track border border-emerald-500/15 rounded-2xl relative overflow-hidden flex shadow-inner">
-                <div className="absolute inset-0 flex">
-                  {[9,10,11,12,13,14,15,16,17,18,19,20].map((h, i) => (
-                    <div key={i} className="flex-1 border-r border-emerald-500/15 last:border-r-0"></div>
+            <div className="overflow-x-auto pb-2 scrollbar-none">
+              <div className="min-w-[760px] lg:min-w-0 relative">
+                {/* Timeline Header */}
+                <div className="flex justify-between text-[10px] font-black text-textMuted uppercase tracking-wider mb-2">
+                  {[9,10,11,12,1,2,3,4,5,6,7,8,9].map((hour, i) => (
+                    <span key={i} className="flex-1 text-center">{hour} {i < 3 || i === 12 ? 'AM' : 'PM'}</span>
                   ))}
                 </div>
                 
-                {/* Bookings */}
-                <div className="absolute inset-0">
-                  {bookings.map((booking, idx) => {
-                    const startHour = parseInt(booking.startTime.split(':')[0]);
-                    const endHour = parseInt(booking.endTime.split(':')[0]);
-                    
-                    const leftPercent = ((startHour - 9) / 12) * 100;
-                    const widthPercent = ((endHour - startHour) / 12) * 100;
-                    
-                    if (leftPercent < 0 || leftPercent >= 100) return null;
-                    
-                    return (
-                      <motion.div 
-                        key={idx}
-                        initial={{ opacity: 0, scaleX: 0 }}
-                        animate={{ opacity: 1, scaleX: 1 }}
-                        className="absolute top-2 bottom-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center text-[10px] font-black uppercase text-emerald-600 tracking-wider shadow-sm origin-left cursor-help"
-                        style={{ 
-                          left: `${leftPercent}%`, 
-                          width: `${widthPercent}%`,
-                          minWidth: '40px'
-                        }}
-                        title={`${booking.startTime} - ${booking.endTime}`}
-                      >
-                        <span className="truncate">{booking.client?.companyName || booking.clientName}</span>
-                      </motion.div>
-                    );
-                  })}
-
-                  {/* Availability indicators */}
-                  <div className="flex w-full h-full">
-                    {[9,10,11,12,13,14,15,16,17,18,19,20].map((h, i) => {
-                      const isOccupied = bookings.some(b => {
-                        const s = parseInt(b.startTime.split(':')[0]);
-                        const e = parseInt(b.endTime.split(':')[0]);
-                        return h >= s && h < e;
-                      });
-                      if (isOccupied) return <div key={i} className="flex-1"></div>;
+                {/* Timeline Track */}
+                <div className="h-14 timeline-track border border-emerald-500/15 rounded-2xl relative overflow-hidden flex shadow-inner">
+                  <div className="absolute inset-0 flex">
+                    {[9,10,11,12,13,14,15,16,17,18,19,20].map((h, i) => (
+                      <div key={i} className="flex-1 border-r border-emerald-500/15 last:border-r-0"></div>
+                    ))}
+                  </div>
+                  
+                  {/* Bookings */}
+                  <div className="absolute inset-0">
+                    {bookings.map((booking, idx) => {
+                      const startHour = parseInt(booking.startTime.split(':')[0]);
+                      const endHour = parseInt(booking.endTime.split(':')[0]);
+                      
+                      const leftPercent = ((startHour - 9) / 12) * 100;
+                      const widthPercent = ((endHour - startHour) / 12) * 100;
+                      
+                      if (leftPercent < 0 || leftPercent >= 100) return null;
+                      
                       return (
-                        <div key={i} className="flex-1 flex items-center justify-center text-[8px] text-textMain/40 font-black uppercase tracking-[0.2em] hover:text-primary transition-colors mt-1.5">
-                          Free
-                        </div>
+                        <motion.div 
+                          key={idx}
+                          initial={{ opacity: 0, scaleX: 0 }}
+                          animate={{ opacity: 1, scaleX: 1 }}
+                          className="absolute top-2 bottom-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center text-[10px] font-black uppercase text-emerald-600 tracking-wider shadow-sm origin-left cursor-help"
+                          style={{ 
+                            left: `${leftPercent}%`, 
+                            width: `${widthPercent}%`,
+                            minWidth: '40px'
+                          }}
+                          title={`${booking.startTime} - ${booking.endTime}`}
+                        >
+                          <span className="truncate">{booking.client?.companyName || booking.clientName}</span>
+                        </motion.div>
                       );
                     })}
+
+                    {/* Availability indicators */}
+                    <div className="flex w-full h-full">
+                      {[9,10,11,12,13,14,15,16,17,18,19,20].map((h, i) => {
+                        const isOccupied = bookings.some(b => {
+                          const s = parseInt(b.startTime.split(':')[0]);
+                          const e = parseInt(b.endTime.split(':')[0]);
+                          return h >= s && h < e;
+                        });
+                        if (isOccupied) return <div key={i} className="flex-1"></div>;
+                        return (
+                          <div key={i} className="flex-1 flex items-center justify-center text-[8px] text-textMain/40 font-black uppercase tracking-[0.2em] hover:text-primary transition-colors mt-1.5">
+                            Free
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -302,10 +304,10 @@ const Dashboard = () => {
       </div>
 
       {/* Utilization and Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         
         {/* Utilization Table */}
-        <div className="xl:col-span-2 bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col group hover:border-primary/40 transition-all">
+        <div className="lg:col-span-2 bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col group hover:border-primary/40 transition-all">
           <div className="p-8 border-b border-primary/20 flex justify-between items-center glass-surface sticky top-0 z-10">
             <div className="flex items-center gap-4">
                <div className="w-12 h-12 bg-secondary/10 border border-secondary/20 rounded-2xl flex items-center justify-center text-secondary shadow-inner">
