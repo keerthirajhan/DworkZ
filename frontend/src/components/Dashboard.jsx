@@ -302,7 +302,7 @@ const Dashboard = () => {
       </div>
 
       {/* Utilization and Activity */}
-      <div className="grid grid-cols-1 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
         {/* Utilization Table */}
         <div className="xl:col-span-2 bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col group hover:border-primary/40 transition-all">
