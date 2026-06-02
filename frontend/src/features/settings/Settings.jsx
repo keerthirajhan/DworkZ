@@ -192,9 +192,9 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
   ];
 
   return (
-    <div className="p-8 w-full max-w-5xl mx-auto space-y-10">
+    <div className="p-4 sm:p-8 w-full max-w-5xl mx-auto space-y-10">
       <div>
-        <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-black text-textMain uppercase tracking-tight">
           Settings
         </h1>
         <p className="text-textMuted mt-2 font-medium">Configure your workspace preferences and appearance.</p>
@@ -339,7 +339,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                   </div>
                 </label>
                 <div className="flex-1 w-full space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Full Name</label>
                       <input 
@@ -583,22 +583,22 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
         <motion.div 
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-surface/80 backdrop-blur-xl border border-primary/20 px-8 py-5 rounded-[2.5rem] shadow-2xl z-50 flex items-center gap-10 min-w-[500px]"
+          className="fixed bottom-4 sm:bottom-10 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 bg-surface/80 backdrop-blur-xl border border-primary/20 px-5 sm:px-8 py-4 sm:py-5 rounded-2xl sm:rounded-[2.5rem] shadow-2xl z-50 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-10 w-auto sm:min-w-[400px]"
         >
           <div>
             <p className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-1">Unsaved Changes</p>
             <p className="text-sm font-bold text-textMain">Apply the new theme settings?</p>
           </div>
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-3 sm:ml-auto w-full sm:w-auto">
             <button 
               onClick={() => setTempTheme(theme)}
-              className="px-6 py-2.5 text-xs font-black uppercase tracking-widest text-textMuted hover:text-textMain transition-colors"
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-xs font-black uppercase tracking-widest text-textMuted hover:text-textMain transition-colors border border-borderSubtle rounded-xl"
             >
               Cancel
             </button>
             <button 
               onClick={() => setTheme(tempTheme)}
-              className="px-10 py-3 bg-primary text-white rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
+              className="flex-1 sm:flex-none px-6 sm:px-10 py-3 bg-primary text-white rounded-xl sm:rounded-full text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
             >
               Apply Changes
             </button>

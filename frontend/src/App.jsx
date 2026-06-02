@@ -49,7 +49,7 @@ const Sidebar = ({ onLogout, profileData, isOpen, onClose }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={onClose}
           />
         )}
@@ -60,7 +60,7 @@ const Sidebar = ({ onLogout, profileData, isOpen, onClose }) => {
         className={`
           fixed inset-y-0 left-0 z-50 w-72 border-r border-borderSubtle bg-background flex flex-col
           transition-transform duration-300 ease-in-out
-          md:static md:translate-x-0 md:z-20
+          lg:static lg:translate-x-0 lg:z-20
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
@@ -77,7 +77,7 @@ const Sidebar = ({ onLogout, profileData, isOpen, onClose }) => {
           {/* Close button — mobile only */}
           <button
             onClick={onClose}
-            className="md:hidden p-2 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors"
+            className="lg:hidden p-2 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={20} />
           </button>
@@ -145,7 +145,7 @@ const MobileBottomNav = ({ onMenuOpen }) => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-background/95 backdrop-blur-xl border-t border-borderSubtle safe-area-inset-bottom">
+    <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-background/95 backdrop-blur-xl border-t border-borderSubtle pb-safe">
       <div className="flex items-center justify-around px-2 py-2">
         {quickNav.map((item) => {
           const Icon = item.icon;
@@ -236,27 +236,27 @@ const Layout = ({ children, onLogout, profileData }) => {
 
       <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
         {/* ── Header ── */}
-        <header className="h-16 md:h-20 flex items-center justify-between px-3 md:px-8 sticky top-0 z-30 pt-2 md:pt-4">
-          <div className="flex-1 bg-surface/80 backdrop-blur-md border border-borderSubtle h-12 md:h-14 rounded-2xl flex items-center justify-between px-3 md:px-6 shadow-sm gap-3">
+        <header className="h-16 lg:h-20 flex items-center justify-between px-3 lg:px-8 sticky top-0 z-30 pt-2 lg:pt-4 pt-safe">
+          <div className="flex-1 bg-surface/80 backdrop-blur-md border border-borderSubtle h-12 lg:h-14 rounded-2xl flex items-center justify-between px-3 lg:px-6 shadow-sm gap-3">
             {/* Mobile hamburger */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-1.5 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
+              className="lg:hidden p-1.5 rounded-xl text-textMuted hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
             >
               <Menu size={20} />
             </button>
 
             {/* Breadcrumb — hidden on very small, visible md+ */}
-            <div className="hidden md:block text-textMuted text-xs font-bold uppercase tracking-widest">
+            <div className="hidden lg:block text-textMuted text-xs font-bold uppercase tracking-widest">
               Pages / <span className="text-textMain">{capitalizedPageName}</span>
             </div>
 
             {/* Mobile: show page name centered */}
-            <div className="md:hidden text-textMain text-xs font-black uppercase tracking-widest">
+            <div className="lg:hidden text-textMain text-xs font-black uppercase tracking-widest">
               {capitalizedPageName}
             </div>
 
-            <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
+            <div className="flex items-center gap-3 lg:gap-6 flex-shrink-0">
               {/* Notification Bell */}
               <div className="relative">
                 <button
@@ -330,10 +330,10 @@ const Layout = ({ children, onLogout, profileData }) => {
                 </AnimatePresence>
               </div>
 
-              <div className="hidden md:block h-6 w-px bg-borderSubtle" />
+              <div className="hidden lg:block h-6 w-px bg-borderSubtle" />
               <button
                 onClick={(e) => { e.preventDefault(); onLogout(); }}
-                className="hidden md:block text-primary hover:text-primary/80 text-xs font-black uppercase tracking-widest transition-colors"
+                className="hidden lg:block text-primary hover:text-primary/80 text-xs font-black uppercase tracking-widest transition-colors"
               >
                 Logout
               </button>

@@ -162,7 +162,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         {/* Conversion Pipeline */}
-        <div className="bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group hover:border-primary/40 transition-all">
+        <div className="bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl relative overflow-hidden group hover:border-primary/40 transition-all">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-primary/20 transition-all"></div>
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 glass-surface text-primary rounded-2xl flex items-center justify-center border-primary/30 shadow-inner">
@@ -211,8 +211,8 @@ const Dashboard = () => {
         </div>
 
         {/* Live Meeting Room Timeline */}
-        <div className="bg-gradient-to-br from-emerald-500/15 to-surface border border-emerald-500/30 rounded-[2.5rem] p-8 shadow-xl hover:border-emerald-500/40 transition-all group">
-          <div className="flex justify-between items-start mb-8">
+        <div className="bg-gradient-to-br from-emerald-500/15 to-surface border border-emerald-500/30 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl hover:border-emerald-500/40 transition-all group">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate('/bookings')}>
                <div className="w-12 h-12 glass-surface text-emerald-400 rounded-2xl flex items-center justify-center border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors shadow-inner">
                   <CalendarIcon size={24} />
@@ -307,8 +307,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         
         {/* Utilization Table */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col group hover:border-primary/40 transition-all">
-          <div className="p-8 border-b border-primary/20 flex justify-between items-center glass-surface sticky top-0 z-10">
+        <div className="lg:col-span-2 bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2rem] sm:rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col group hover:border-primary/40 transition-all">
+          <div className="p-5 sm:p-8 border-b border-primary/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-surface sticky top-0 z-10">
             <div className="flex items-center gap-4">
                <div className="w-12 h-12 bg-secondary/10 border border-secondary/20 rounded-2xl flex items-center justify-center text-secondary shadow-inner">
                   <Activity size={24} />
@@ -371,8 +371,8 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2.5rem] p-8 shadow-xl hover:border-primary/40 transition-all flex flex-col">
-          <div className="flex justify-between items-center mb-8">
+        <div className="bg-gradient-to-br from-primary/20 to-surface border border-primary/30 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-xl hover:border-primary/40 transition-all flex flex-col">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
             <h2 className="text-xl font-black text-textMain uppercase tracking-tight">Recent Logs</h2>
             <div className="flex items-center gap-3">
               {activities.length > 0 && (

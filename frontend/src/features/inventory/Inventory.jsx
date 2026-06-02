@@ -185,7 +185,7 @@ const Inventory = () => {
   const pendingPayments = items.filter(i => i.paymentStatus === 'Credit').reduce((acc, curr) => acc + Number(curr.totalCost || (curr.unitPrice * curr.purchasedQuantity) || 0), 0);
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-8 relative">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-8 relative">
       
       {/* Notifications */}
       <AnimatePresence>
@@ -200,21 +200,21 @@ const Inventory = () => {
         )}
       </AnimatePresence>
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">Inventory Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-textMain uppercase tracking-tight">Inventory Management</h1>
           <p className="text-textMuted mt-1">Efficiently track office supplies, stock levels, and vendor payments.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <button 
             onClick={handlePrint}
-            className="bg-background border border-borderSubtle hover:bg-white/5 text-textMain px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-sm flex items-center gap-2"
+            className="bg-background border border-borderSubtle hover:bg-white/5 text-textMain px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-sm flex items-center gap-2"
           >
             <Printer size={16} /> Print Report
           </button>
           <button 
             onClick={() => handleOpenModal('add')}
-            className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg shadow-primary/25 flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-white px-4 sm:px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-lg shadow-primary/25 flex items-center gap-2"
           >
             <Plus size={16} /> Add New Item
           </button>
@@ -223,7 +223,7 @@ const Inventory = () => {
 
       {/* Stats Dashboard */}
       <div ref={printRef} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-surface border border-borderSubtle p-8 rounded-[32px] flex items-center gap-6 shadow-xl">
           <div className="w-14 h-14 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center"><Package size={28} /></div>
           <div><p className="text-[10px] font-black uppercase tracking-widest text-textMuted mb-1">Total Assets</p><p className="text-3xl font-black text-textMain">{totalItemsCount}</p></div>
@@ -250,7 +250,8 @@ const Inventory = () => {
       </div>
 
       <div className="bg-surface border border-borderSubtle rounded-[32px] overflow-hidden shadow-2xl">
-        <table className="w-full text-left text-sm text-textMain">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-textMain">
           <thead className="bg-background/50 border-b border-borderSubtle text-textMuted uppercase font-black tracking-widest text-[10px]">
             <tr>
               <th className="px-8 py-6">Item Specification</th>
@@ -312,6 +313,7 @@ const Inventory = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
       </div>
 
@@ -319,7 +321,7 @@ const Inventory = () => {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-surface border border-borderSubtle rounded-[32px] p-10 w-full max-w-xl shadow-2xl relative overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-surface border border-borderSubtle rounded-[32px] p-6 sm:p-10 w-full max-w-xl shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
               <h2 className="text-2xl font-black uppercase tracking-tight mb-8 flex items-center gap-3 text-textMain">
                  <div className="p-2 bg-primary/20 rounded-xl text-primary"><Package size={20} /></div>
@@ -327,7 +329,7 @@ const Inventory = () => {
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                    <div className="space-y-2">
                      <label className="text-[10px] font-black uppercase text-textMuted tracking-widest ml-1">Item Designation</label>
                      <input 
@@ -352,7 +354,7 @@ const Inventory = () => {
                    </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-textMuted tracking-widest ml-1">Total Units</label>
                     <input 

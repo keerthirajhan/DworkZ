@@ -260,16 +260,16 @@ const Visitors = () => {
   };
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-textMain uppercase tracking-tight">
             Visitor Management
           </h1>
           <p className="text-textMuted mt-1">Front desk check-in kiosk and visitor logs.</p>
         </div>
 
-        <div className="bg-surface border border-borderSubtle p-1 rounded-xl flex gap-1">
+        <div className="bg-surface border border-borderSubtle p-1 rounded-xl flex gap-1 self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('logs')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'logs' ? 'bg-primary text-textMain shadow-lg' : 'text-textMuted hover:text-textMain'}`}
@@ -418,7 +418,7 @@ const Visitors = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-surface border border-borderSubtle rounded-2xl p-8 max-w-3xl shadow-xl"
+            className="bg-surface border border-borderSubtle rounded-2xl p-5 sm:p-8 max-w-3xl shadow-xl"
           >
             <div className="mb-8 border-b border-borderSubtle pb-6">
               <h2 className="text-xl font-semibold flex items-center gap-2"><UserPlus className="text-primary" /> Front Desk Check-in</h2>
@@ -426,7 +426,7 @@ const Visitors = () => {
             </div>
 
             <form onSubmit={handleCheckIn} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-primary">Full Name <span className="text-rose-400">*</span></label>
                   <input
@@ -450,7 +450,7 @@ const Visitors = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-primary">Whom to Visit <span className="text-rose-400">*</span></label>
                   <input
@@ -491,7 +491,7 @@ const Visitors = () => {
                 <p className="text-[10px] text-textMuted">12-digit Aadhar number — stored securely for compliance.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-primary">Email Address <span className="text-rose-400">*</span></label>
                   <div className="flex gap-3">
@@ -631,10 +631,10 @@ const Visitors = () => {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface border border-primary/20 rounded-[2.5rem] w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto"
+            className="bg-surface border border-primary/20 rounded-3xl sm:rounded-[2.5rem] w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col lg:flex-row max-h-[90vh] overflow-y-auto lg:overflow-hidden"
           >
             {/* Identity Card */}
-            <div className="md:w-5/12 bg-background p-10 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-borderSubtle relative">
+            <div className="lg:w-5/12 bg-background p-5 sm:p-10 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-r border-borderSubtle relative">
               <div className="absolute top-6 left-6">
                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getPurposeStyle(selectedVisitor.purpose)}`}>
                   {selectedVisitor.purpose}
@@ -662,11 +662,11 @@ const Visitors = () => {
             </div>
 
             {/* Visit Dossier */}
-            <div className="md:w-7/12 p-10 space-y-10 overflow-y-auto">
+            <div className="lg:w-7/12 p-5 sm:p-10 space-y-6 sm:space-y-10 overflow-y-auto">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-textMuted mb-6">Security Credentials</h3>
-                  <div className="grid grid-cols-2 gap-10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-10">
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-textMuted uppercase font-bold">Visiting Official</p>
                       <p className="text-textMain font-bold text-lg">{selectedVisitor.personToVisit}</p>
@@ -703,7 +703,7 @@ const Visitors = () => {
 
               <div>
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-textMuted mb-6">Contact & Verification</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="flex items-center gap-4 p-4 bg-background rounded-2xl border border-borderSubtle">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                       <Mail size={18} />
@@ -805,7 +805,7 @@ const Visitors = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Service Date</label>
                     <input

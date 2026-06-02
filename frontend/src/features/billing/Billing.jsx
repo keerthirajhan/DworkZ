@@ -168,16 +168,16 @@ const Billing = () => {
   );
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-8 relative">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6 sm:space-y-8 relative">
       
       {/* Alerts are now handled by AlertModal at the bottom */}
 
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-3xl font-black text-textMain uppercase tracking-tight mb-2">Billing & Payments</h1>
           <p className="text-textMuted max-w-lg">Manage professional Billing Invoices, track revenue, and automate your collection workflow.</p>
         </div>
-        <button onClick={() => setShowGenModal(true)} className="bg-primary text-textMain px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
+        <button onClick={() => setShowGenModal(true)} className="bg-primary text-textMain px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 w-full sm:w-auto shrink-0">
           <FileText size={16} /> Run Monthly Billing
         </button>
       </div>
@@ -207,7 +207,8 @@ const Billing = () => {
             <input type="text" placeholder="Search by Invoice # or Client..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-background border border-borderSubtle text-sm rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:border-primary transition-all font-bold text-textMain" />
           </div>
         </div>
-        <table className="w-full text-left text-sm text-textMain">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-textMain">
           <thead className="bg-background/50 border-b border-borderSubtle text-textMuted uppercase font-black tracking-widest text-[10px]">
             <tr>
               <th className="px-8 py-5">Billing Invoice #</th>
@@ -269,6 +270,7 @@ const Billing = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Professional Tax Invoice Preview Modal */}
@@ -288,8 +290,9 @@ const Billing = () => {
                      <button onClick={() => setShowPreview(false)} className="bg-white shadow-sm border border-gray-100 hover:bg-gray-100 p-2 rounded-xl transition-colors"><X size={20} className="text-gray-400" /></button>
                   </div>
 
-                  <div className="p-10 overflow-y-auto custom-scrollbar flex-1" ref={printRef}>
-                    <div className="border border-black bg-white">
+                  <div className="p-4 sm:p-10 overflow-y-auto custom-scrollbar flex-1" ref={printRef}>
+                    <div className="overflow-x-auto w-full">
+                      <div className="border border-black bg-white min-w-[700px] lg:min-w-0">
                       <div className="text-sm font-bold text-gray-800 p-2 border-b border-black">DworkZ - Client Invoice</div>
                       <div className="grid grid-cols-2 border-b border-black">
                         <div className="p-4 border-r border-black space-y-3">
@@ -453,11 +456,12 @@ const Billing = () => {
                         <div className="p-4 border-r border-black space-y-1"><p className="text-[9px] font-black uppercase text-gray-400 mb-2">Company's Bank Details</p><p className="text-[10px] font-bold text-gray-700">A/c Holder: <span className="font-black text-gray-900">DworkZ</span></p><p className="text-[10px] font-bold text-gray-700">A/c No.: <span className="font-black text-gray-900">50200118437552</span></p><p className="text-[10px] font-bold text-gray-700">A/c Type: <span className="font-black text-gray-900">Current Account</span></p><p className="text-[10px] font-bold text-gray-700">IFS Code: <span className="font-black text-gray-900">HDFC0005651</span></p><p className="text-[10px] font-bold text-gray-700">Branch: <span className="font-black text-gray-900">EAST SAMBANDHAM ROAD R S PURAM</span></p></div>
                         <div className="p-4 text-right flex flex-col justify-between"><p className="text-[10px] font-black uppercase text-gray-400">for DworkZ</p><div className="space-y-1"><div className="w-16 h-8 bg-[#00bfa5]/10 rounded ml-auto flex items-center justify-center"><CheckCircle size={20} className="text-[#00bfa5]" /></div><p className="font-black text-[10px] uppercase text-gray-800 tracking-widest">Authorised Signatory</p></div></div>
                       </div>
+                      </div>
                     </div>
                     <div className="text-center py-4 font-black text-gray-300 uppercase tracking-[10px] text-[8px]">This is a Computer Generated Billing Invoice</div>
                   </div>
 
-                  <div className="p-8 border-t border-gray-100 bg-gray-50 flex justify-between gap-4">
+                  <div className="p-5 sm:p-8 border-t border-gray-100 bg-gray-50 flex justify-between gap-4">
                      <button onClick={() => setShowPreview(false)} className="px-8 py-4 bg-white border border-gray-200 text-gray-500 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-gray-100 transition-all">Cancel View</button>
                       <div className="flex gap-4">
                         <button onClick={handlePrint} className="px-10 py-4 bg-primary text-textMain rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"><Printer size={16} /> Print & Save Invoice</button>

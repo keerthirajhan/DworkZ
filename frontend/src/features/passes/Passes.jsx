@@ -177,17 +177,16 @@ const Passes = () => {
   };
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-end mb-8">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-4 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-textMain uppercase tracking-tight">
             Passes Management
           </h1>
           <p className="text-textMuted mt-2 font-medium">Manage day, weekly, and hourly passes, and view history.</p>
         </div>
 
-
-        <div className="bg-surface border border-borderSubtle p-1 rounded-xl flex gap-1">
+        <div className="bg-surface border border-borderSubtle p-1 rounded-xl flex gap-1 self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('logs')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'logs' ? 'bg-primary text-textMain shadow-lg' : 'text-textMuted hover:text-textMain'}`}
@@ -344,7 +343,7 @@ const Passes = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-surface border border-borderSubtle rounded-2xl p-8 max-w-3xl shadow-xl"
+            className="bg-surface border border-borderSubtle rounded-2xl p-5 sm:p-8 max-w-3xl shadow-xl"
           >
             <div className="mb-8 border-b border-borderSubtle pb-6">
               <h2 className="text-xl font-semibold flex items-center gap-2"><UserPlus className="text-primary" /> Front Desk Check-in</h2>
@@ -352,7 +351,7 @@ const Passes = () => {
             </div>
 
             <form onSubmit={handleCheckIn} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-primary">Full Name <span className="text-rose-400">*</span></label>
                   <input
@@ -416,7 +415,7 @@ const Passes = () => {
                 <p className="text-[10px] text-textMuted">12-digit Aadhar number — stored securely for compliance.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-primary">Email Address <span className="text-rose-400">*</span></label>
                   <input
@@ -463,7 +462,7 @@ const Passes = () => {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-surface border border-primary/20 rounded-[2.5rem] w-full max-w-2xl shadow-2xl p-10 flex flex-col relative max-h-[90vh] overflow-y-auto custom-scrollbar"
+            className="bg-surface border border-primary/20 rounded-3xl sm:rounded-[2.5rem] w-full max-w-2xl shadow-2xl p-5 sm:p-10 flex flex-col relative max-h-[90vh] overflow-y-auto custom-scrollbar"
           >
             {/* Modal Header */}
             <div className="flex justify-between items-start mb-8">
@@ -485,7 +484,7 @@ const Passes = () => {
               {/* Security Credentials */}
               <div>
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-textMuted mb-4">Security Credentials</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-background/40 p-6 rounded-2xl border border-borderSubtle">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 bg-background/40 p-4 sm:p-6 rounded-2xl border border-borderSubtle">
                   <div className="space-y-1">
                     <p className="text-[10px] text-textMuted uppercase font-bold">Aadhar Number</p>
                     <p className="text-textMain font-mono text-base font-bold">{selectedVisitor.aadharNumber || 'N/A'}</p>
@@ -596,7 +595,7 @@ const Passes = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-surface border border-primary/20 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+              className="bg-surface border border-primary/20 rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
             >
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-borderSubtle">
                 <h3 className="text-lg font-bold text-textMain uppercase tracking-tight flex items-center gap-2">
@@ -620,7 +619,7 @@ const Passes = () => {
                   <p className="text-xs text-textMuted font-medium">{invoiceVisitor.email}</p>
                 </div>
 
-                 <div className="grid grid-cols-2 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Rate (INR)</label>
                     <input
@@ -646,9 +645,9 @@ const Passes = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-primary">Service Start Date</label>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Service Start Date</label>
                     <input
                       type="date"
                       value={serviceDate}

@@ -530,57 +530,60 @@ const ClientDetail = () => {
     if (status === 'Inactive' || status === 'Expired' || status === 'Archived') currentIndex = 3;
     
     return (
-      <div className="flex items-center w-full my-12 max-w-3xl mx-auto px-4 overflow-visible">
-        {steps.map((step, i) => (
-          <React.Fragment key={step}>
-            <div className="flex flex-col items-center relative z-10 shrink-0">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-solid font-black transition-all duration-500 ${
-                i <= currentIndex 
-                  ? 'bg-primary border-primary text-white shadow-lg shadow-primary/30' 
-                  : 'bg-background border-primary/20 text-textMuted'
-              }`}>
-                {(i < currentIndex || (i === 3 && status === 'Active')) ? (
-                  <div className="flex items-center justify-center w-full h-full">
-                    <Check size={24} strokeWidth={4} />
-                  </div>
-                ) : i + 1}
+      <div className="overflow-x-auto scrollbar-none -mx-2 sm:mx-0">
+        <div className="flex items-center w-full my-8 sm:my-12 max-w-3xl mx-auto px-4 overflow-visible min-w-[360px]">
+          {steps.map((step, i) => (
+            <React.Fragment key={step}>
+              <div className="flex flex-col items-center relative z-10 shrink-0">
+                <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-[3px] sm:border-4 border-solid text-sm sm:text-base font-black transition-all duration-500 ${
+                  i <= currentIndex 
+                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/30' 
+                    : 'bg-background border-primary/20 text-textMuted'
+                }`}>
+                  {(i < currentIndex || (i === 3 && status === 'Active')) ? (
+                    <div className="flex items-center justify-center w-full h-full">
+                      <Check size={18} className="sm:hidden" strokeWidth={4} />
+                      <Check size={24} className="hidden sm:block" strokeWidth={4} />
+                    </div>
+                  ) : i + 1}
+                </div>
+                <span className={`absolute top-10 sm:top-12 text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-colors duration-500 ${
+                  i <= currentIndex ? 'text-primary' : 'text-textMuted'
+                }`}>
+                  {step}
+                </span>
               </div>
-              <span className={`absolute top-12 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-colors duration-500 ${
-                i <= currentIndex ? 'text-primary' : 'text-textMuted'
-              }`}>
-                {step}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className="flex-1 h-1.5 mx-2 rounded-full bg-borderSubtle relative overflow-hidden">
-                <div 
-                  className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000 ease-out"
-                  style={{ width: i < currentIndex ? '100%' : '0%' }}
-                />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
+              {i < steps.length - 1 && (
+                <div className="flex-1 h-1 sm:h-1.5 mx-1 sm:mx-2 rounded-full bg-borderSubtle relative overflow-hidden">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000 ease-out"
+                    style={{ width: i < currentIndex ? '100%' : '0%' }}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     );
   };
 
-  if (loading) return <div className="p-8 text-textMuted flex items-center justify-center min-h-[500px]">Loading client architecture...</div>;
-  if (!client) return <div className="p-8 text-rose-400 flex items-center justify-center min-h-[500px]">Client profile not found.</div>;
+  if (loading) return <div className="p-4 sm:p-8 text-textMuted flex items-center justify-center min-h-[500px]">Loading client architecture...</div>;
+  if (!client) return <div className="p-4 sm:p-8 text-rose-400 flex items-center justify-center min-h-[500px]">Client profile not found.</div>;
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-10 pb-20">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6 sm:space-y-10 pb-20">
       <button onClick={() => navigate('/clients')} className="flex items-center gap-2 text-textMuted hover:text-textMain transition-colors text-sm font-bold uppercase tracking-widest">
         <ArrowLeft size={16} /> Back to Client List
       </button>
 
-      <div className="bg-surface border border-borderSubtle p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden teal-glow">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="flex justify-between items-start relative z-10">
-          <div className="flex items-center gap-8">
-            <label className="relative group cursor-pointer flex flex-col items-center gap-3">
+      <div className="bg-surface border border-borderSubtle p-5 sm:p-10 rounded-3xl sm:rounded-[2.5rem] shadow-2xl relative overflow-hidden teal-glow">
+        <div className="absolute top-0 right-0 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-4 sm:gap-0 relative z-10">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 text-center sm:text-left">
+            <label className="relative group cursor-pointer flex flex-col items-center gap-2 sm:gap-3">
               <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-4xl font-black text-textMain shadow-[0_0_30px_rgba(20,184,166,0.3)] overflow-hidden relative">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/20 flex items-center justify-center text-3xl sm:text-4xl font-black text-textMain shadow-[0_0_30px_rgba(20,184,166,0.3)] overflow-hidden relative">
                 {client.profilePhotoUrl ? (
                   <img key={client.profilePhotoUrl} src={client.profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
@@ -595,16 +598,16 @@ const ClientDetail = () => {
               </span>
             </label>
             <div>
-              <h1 className="text-5xl font-black text-gradient-teal tracking-tighter">{client.companyName || 'N/A'}</h1>
-              <p className="text-textMuted flex items-center gap-2 mt-2 text-xl font-medium italic">{client.name} (Contact Person)</p>
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-gradient-teal tracking-tighter">{client.companyName || 'N/A'}</h1>
+              <p className="text-textMuted flex items-center justify-center sm:justify-start gap-2 mt-1 sm:mt-2 text-sm sm:text-xl font-medium italic">{client.name} (Contact Person)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsEditModalOpen(true)}
-              className="bg-background border border-borderSubtle text-textMain hover:border-primary hover:text-primary px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 text-sm shadow-xl hover:shadow-primary/10"
+              className="bg-background border border-borderSubtle text-textMain hover:border-primary hover:text-primary px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-bold transition-all flex items-center gap-2 text-xs sm:text-sm shadow-xl hover:shadow-primary/10"
             >
-              <Edit3 size={18} /> Edit Profile
+              <Edit3 size={16} className="sm:hidden" /><Edit3 size={18} className="hidden sm:block" /> Edit Profile
             </button>
           </div>
         </div>
@@ -852,7 +855,7 @@ const ClientDetail = () => {
 
               {/* PLAN ACTIONS - Only for Active/Inactive Members */}
               {['Active', 'Inactive', 'Expired'].includes(client.status) && (
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button 
                     onClick={() => {
                       setUpgradeForm({ newRentAmount: client.rentAmount, planType: client.planType, workspaceDetails: client.workspaceDetails, generateInvoice: false, invoiceAmount: '' });
@@ -1012,17 +1015,18 @@ const ClientDetail = () => {
                 const activeAgrId = signedAgr?._id || latestAgr?._id || null;
                 
                 return (
-                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-3xl p-8 space-y-8 animate-in zoom-in duration-500">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 bg-emerald-500 text-background rounded-[2rem] flex items-center justify-center shadow-2xl shadow-emerald-500/30">
-                          <FileText size={32} strokeWidth={2.5} />
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-6 sm:space-y-8 animate-in zoom-in duration-500">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 sm:gap-5">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-emerald-500 text-background rounded-xl sm:rounded-[2rem] flex items-center justify-center shadow-2xl shadow-emerald-500/30 shrink-0">
+                          <FileText size={24} className="sm:hidden" strokeWidth={2.5} />
+                          <FileText size={32} className="hidden sm:block" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black text-textMain uppercase tracking-tighter">Membership Agreement</h4>
+                          <h4 className="text-base sm:text-xl font-black text-textMain uppercase tracking-tighter">Membership Agreement</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <span className={`w-2 h-2 rounded-full ${docUrl ? 'bg-emerald-500 animate-pulse' : 'bg-orange-400'}`}></span>
-                            <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-[0.2em]">
+                            <p className="text-[9px] sm:text-[10px] text-emerald-400 font-bold uppercase tracking-[0.2em]">
                               {docUrl ? 'Live & Verified Record' : 'No Document — Upload Required'}
                             </p>
                           </div>
@@ -1058,7 +1062,7 @@ const ClientDetail = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-8 border-t border-emerald-500/10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-emerald-500/10">
                       <button 
                         onClick={() => activeAgrId ? handleDeleteAgreement(activeAgrId) : showAlert('Notice', 'No document record to delete.', 'info')}
                         className="flex items-center justify-center gap-2 bg-rose-500/5 border border-rose-500/20 text-rose-500 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-textMain transition-all"
@@ -1090,7 +1094,7 @@ const ClientDetail = () => {
                       const isLapsed = agr.status === 'Archived' || client.status === 'Inactive' || (agr.status === 'Signed' && activeSignedAgrId && agr._id !== activeSignedAgrId);
                       
                       return (
-                      <div key={agr._id} className={`border border-borderSubtle rounded-xl p-4 flex items-center justify-between transition-colors ${isLapsed ? 'opacity-60 bg-background' : 'hover:bg-white/5'}`}>
+                      <div key={agr._id} className={`border border-borderSubtle rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 transition-colors ${isLapsed ? 'opacity-60 bg-background' : 'hover:bg-white/5'}`}>
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${(!isLapsed && agr.status === 'Signed') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : isLapsed ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' : 'bg-orange-500/10 border-orange-500/20 text-orange-400'}`}>
                             {(!isLapsed && agr.status === 'Signed') ? <Check size={16} strokeWidth={3} /> : isLapsed ? <XCircle size={16} /> : <PenTool size={16} />}
@@ -1108,7 +1112,7 @@ const ClientDetail = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <button onClick={() => viewPDF(agr.agreementPDFUrl || agr.draftPDFUrl)} className="text-textMain hover:bg-primary/10 p-2 border border-borderSubtle rounded-lg bg-background"><Eye size={16} /></button>
                           <button onClick={() => downloadPDF(agr.agreementPDFUrl || agr.draftPDFUrl, `Agreement_${client.companyName}.pdf`)} className="text-textMuted hover:text-textMain p-2 border border-borderSubtle rounded-lg bg-background"><Download size={16} /></button>
                           <button onClick={() => window.print()} className="text-textMuted hover:text-textMain p-2 border border-borderSubtle rounded-lg bg-background"><Printer size={16} /></button>
@@ -1167,7 +1171,7 @@ const ClientDetail = () => {
       {/* Archive Agreement Modal */}
       {isDeleteAgrModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-3xl p-8 w-full max-w-md shadow-2xl space-y-6">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-md shadow-2xl space-y-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trash2 size={32} />
@@ -1194,7 +1198,7 @@ const ClientDetail = () => {
       {/* Cancellation Modal */}
       {isCancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-3xl p-8 w-full max-w-lg shadow-2xl space-y-6">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-lg shadow-2xl space-y-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle size={32} />
@@ -1264,7 +1268,7 @@ const ClientDetail = () => {
       {/* Renew Modal */}
       {isRenewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-3xl p-8 w-full max-w-lg shadow-2xl space-y-6">
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-lg shadow-2xl space-y-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <RefreshCw size={32} />
@@ -1313,7 +1317,7 @@ const ClientDetail = () => {
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-surface border border-borderSubtle rounded-[2.5rem] p-8 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
               <div className="flex justify-between items-center mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-textMain uppercase tracking-tight">Edit Company Profile</h2>
@@ -1323,7 +1327,7 @@ const ClientDetail = () => {
               </div>
               
               <form onSubmit={handleUpdateProfile} className="space-y-8">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-primary uppercase tracking-widest">Company Name</label>
                     <input value={editFormData.companyName} onChange={(e) => setEditFormData({...editFormData, companyName: e.target.value})} type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none" />
@@ -1348,7 +1352,7 @@ const ClientDetail = () => {
 
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-accent uppercase tracking-widest border-b border-borderSubtle pb-2">Billing & Membership</h3>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-primary uppercase tracking-widest">GST Number</label>
                       <input 
@@ -1415,14 +1419,14 @@ const ClientDetail = () => {
       {/* Proposal Customization Modal */}
       {isProposalModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-3xl p-8 w-full max-w-lg shadow-2xl space-y-6">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-3xl p-5 sm:p-8 w-full max-w-lg shadow-2xl space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-textMain mb-1">Create Proposal</h2>
               <p className="text-textMuted text-sm">Customize the terms for this client before sending.</p>
             </div>
             
             <form onSubmit={handleGenerateProposal} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs text-textMuted font-bold uppercase tracking-wider">Plan Type</label>
                   <select 
@@ -1478,7 +1482,7 @@ const ClientDetail = () => {
         {isUpgradeModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-surface border border-borderSubtle rounded-[2.5rem] p-8 w-full max-w-lg shadow-2xl">
+              className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full max-w-lg shadow-2xl">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-2xl font-black text-textMain uppercase tracking-tight">Upgrade / Downgrade</h2>
@@ -1488,7 +1492,7 @@ const ClientDetail = () => {
               </div>
 
               {/* Current vs New comparison */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
                 <div className="bg-background border border-borderSubtle rounded-2xl p-4">
                   <p className="text-[10px] font-black text-textMuted uppercase tracking-widest mb-1">Current Rent</p>
                   <p className="text-2xl font-black text-textMain">₹{client?.rentAmount?.toLocaleString()}</p>
@@ -1502,7 +1506,7 @@ const ClientDetail = () => {
               </div>
 
               <form onSubmit={handleUpgradePlan} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-primary uppercase tracking-widest">New Rent Amount (₹)</label>
                     <input type="number" onWheel={(e) => e.target.blur()} value={upgradeForm.newRentAmount} onChange={e => setUpgradeForm({...upgradeForm, newRentAmount: e.target.value})}
@@ -1571,7 +1575,7 @@ const ClientDetail = () => {
         {isCancelModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-surface border border-rose-500/20 rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl">
+              className="bg-surface border border-rose-500/20 rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 w-full max-w-md shadow-2xl">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <XCircle size={32} className="text-rose-500" />
@@ -1615,7 +1619,7 @@ const ClientDetail = () => {
         {isPortalModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-surface border border-borderSubtle rounded-[2.5rem] p-8 w-full max-w-md shadow-2xl">
+              className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 w-full max-w-md shadow-2xl">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-black text-textMain uppercase tracking-tight">Portal Access</h2>
                 <p className="text-xs text-textMuted mt-1">Set credentials for <span className="text-primary font-bold">{client?.companyName}</span></p>
@@ -1656,7 +1660,7 @@ const ClientDetail = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-surface border border-borderSubtle rounded-[2rem] p-8 w-full max-w-sm shadow-2xl text-center teal-glow"
+              className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2rem] p-5 sm:p-8 w-full max-w-sm shadow-2xl text-center teal-glow"
             >
               <div className={`w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center ${alertConfig.type === 'error' ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
                 {alertConfig.type === 'error' ? <X size={32} /> : <CheckCircle size={32} />}

@@ -661,7 +661,7 @@ Thank you for your interest in DworkZ.`,
   const stages = ['New Lead', 'Proposal Sent', 'Negotiation', 'Awaiting Signature', 'Converted', 'Rejected'];
 
   return (
-    <div className="p-8 space-y-10 relative">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-10 relative">
       {/* Toast Notification */}
       <AnimatePresence>
         {successMessage && (
@@ -681,7 +681,7 @@ Thank you for your interest in DworkZ.`,
         )}
       </AnimatePresence>
 
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
         <div>
           <div className="flex items-center gap-4 mb-2">
             <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
@@ -704,15 +704,15 @@ Thank you for your interest in DworkZ.`,
           </div>
           <p className="text-textMuted font-medium">Track, nurture, and convert your workspace lead pipeline.</p>
         </div>
-        <div className="flex gap-4 relative">
-          <div className="relative group">
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto relative">
+          <div className="relative group flex-1 sm:flex-initial">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-textMuted group-focus-within:text-primary transition-colors" size={18} />
             <input 
               type="text"
               placeholder="Search leads..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-surface border border-borderSubtle rounded-2xl pl-12 pr-10 py-3 text-sm text-textMain focus:border-primary focus:outline-none w-64 focus:w-80 transition-all shadow-inner"
+              className="bg-surface border border-borderSubtle rounded-2xl pl-12 pr-10 py-3 text-sm text-textMain focus:border-primary focus:outline-none w-full sm:w-64 sm:focus:w-80 transition-all shadow-inner"
             />
             {searchTerm && (
               <button 
@@ -726,7 +726,7 @@ Thank you for your interest in DworkZ.`,
 
           <button 
             onClick={() => setIsAdvancedFilterOpen(!isAdvancedFilterOpen)}
-            className={`px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 border ${isAdvancedFilterOpen || Object.values(advancedFilters).some(v => v !== 'All') ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-surface border-borderSubtle text-textMain hover:border-primary'}`}
+            className={`px-6 py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 border w-full sm:w-auto ${isAdvancedFilterOpen || Object.values(advancedFilters).some(v => v !== 'All') ? 'bg-primary/10 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-surface border-borderSubtle text-textMain hover:border-primary'}`}
           >
             <Filter size={18} /> 
             Filters
@@ -741,7 +741,7 @@ Thank you for your interest in DworkZ.`,
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 top-full mt-4 w-[400px] bg-surface border border-borderSubtle rounded-3xl p-6 shadow-2xl z-[50] teal-glow"
+                className="absolute right-0 top-full mt-4 w-[90vw] sm:w-[400px] bg-surface border border-borderSubtle rounded-3xl p-6 shadow-2xl z-[50] teal-glow"
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-textMain font-bold tracking-tight">Filter Workspace Lead Pipeline</h3>
@@ -816,7 +816,7 @@ Thank you for your interest in DworkZ.`,
               setNewLead(INITIAL_LEAD_STATE);
               setIsAddLeadModalOpen(true);
             }}
-            className="bg-primary hover:bg-primary/90 text-textMain px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/25 flex items-center gap-2 teal-glow group"
+            className="bg-primary hover:bg-primary/90 text-textMain px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2 teal-glow group w-full sm:w-auto shrink-0 active:scale-95"
           >
             <Plus size={20} className="group-hover:scale-110 transition-transform" /> Add Lead
           </button>
@@ -860,10 +860,10 @@ Thank you for your interest in DworkZ.`,
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-6 gap-3 pb-6 min-h-[600px]"
+              className="flex lg:grid lg:grid-cols-6 gap-4 overflow-x-auto lg:overflow-x-visible pb-6 min-h-[600px] scrollbar-thin scrollbar-thumb-borderSubtle"
             >
               {stages.map(stage => (
-                <div key={stage} className="flex flex-col gap-3 min-w-0">
+                <div key={stage} className="flex flex-col gap-3 min-w-[280px] lg:min-w-0 flex-shrink-0 lg:flex-shrink">
                   <div className="flex justify-between items-center px-1">
                     <div className="flex items-center gap-1.5 overflow-hidden">
                       <span className="text-[10px] font-black text-slate-800 dark:text-white/80 uppercase tracking-tighter truncate group-hover:text-primary transition-colors">{stage}</span>
@@ -1036,25 +1036,29 @@ Thank you for your interest in DworkZ.`,
               className="bg-surface border border-borderSubtle rounded-[2.5rem] w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col h-[90vh] teal-glow"
             >
               {/* Step Progress */}
-              <div className="flex items-center px-10 pt-8 pb-6 border-b border-borderSubtle shrink-0 gap-4">
-                <button onClick={() => setIsProposalModalOpen(false)} className="text-textMuted hover:text-textMain transition-colors mr-2"><X size={20}/></button>
-                {['Pricing', 'Preview PDF', 'Send Email'].map((label, i) => (
-                  <React.Fragment key={label}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${proposalStep > i+1 ? 'bg-primary text-textMain' : proposalStep === i+1 ? 'bg-primary text-textMain shadow-[0_0_0_5px_rgba(20,184,166,0.15)]' : 'bg-background border-2 border-primary/20 text-textMuted'}`}>{proposalStep > i+1 ? '✓' : i+1}</div>
-                      <span className={`text-xs font-bold uppercase tracking-widest ${proposalStep === i+1 ? 'text-textMain' : 'text-textMuted'}`}>{label}</span>
-                    </div>
-                    {i < 2 && <div className={`flex-1 h-px ${proposalStep > i+1 ? 'bg-primary' : 'bg-borderSubtle'}`}/>}
-                  </React.Fragment>
-                ))}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 sm:px-10 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-borderSubtle shrink-0 gap-4">
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => setIsProposalModalOpen(false)} className="text-textMuted hover:text-textMain transition-colors mr-2"><X size={20}/></button>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 flex-1">
+                  {['Pricing', 'Preview PDF', 'Send Email'].map((label, i) => (
+                    <React.Fragment key={label}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${proposalStep > i+1 ? 'bg-primary text-textMain' : proposalStep === i+1 ? 'bg-primary text-textMain shadow-[0_0_0_5px_rgba(20,184,166,0.15)]' : 'bg-background border-2 border-primary/20 text-textMuted'}`}>{proposalStep > i+1 ? '✓' : i+1}</div>
+                        <span className={`text-xs font-bold uppercase tracking-widest ${proposalStep === i+1 ? 'text-textMain' : 'text-textMuted'}`}>{label}</span>
+                      </div>
+                      {i < 2 && <div className={`hidden sm:block flex-1 h-px ${proposalStep > i+1 ? 'bg-primary' : 'bg-borderSubtle'}`}/>}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex flex-1 overflow-hidden">
+              <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
                 {/* STEP 1: PRICING FORM + LIVE PREVIEW */}
                 {proposalStep === 1 && (
-                  <div className="flex flex-1 overflow-hidden">
+                  <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden w-full">
                     {/* Left: Inputs */}
-                    <div className="w-72 border-r border-borderSubtle p-8 flex flex-col gap-5 overflow-y-auto custom-scrollbar bg-background/40 shrink-0">
+                    <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-borderSubtle p-5 lg:p-8 flex flex-col gap-5 bg-background/40 shrink-0 h-[45vh] lg:h-full overflow-y-auto custom-scrollbar">
                       <div className="p-3 bg-surface rounded-xl border border-borderSubtle">
                         <p className="text-xs font-black text-slate-900">{selectedClient?.companyName || 'Private Client'}</p>
                         <p className="text-[10px] text-slate-600 mt-0.5">{selectedClient?.contactEmail || 'No Email'}</p>
@@ -1097,8 +1101,9 @@ Thank you for your interest in DworkZ.`,
                       </div>
                     </div>
                     {/* Right: Live Preview */}
-                    <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50">
-                      <div className="max-w-xl mx-auto bg-white shadow-xl rounded-2xl p-10 md:p-12 border border-slate-100 min-h-[700px] flex flex-col">
+                    <div className="flex-1 p-5 lg:p-8 overflow-y-auto custom-scrollbar bg-slate-50 h-[45vh] lg:h-full w-full">
+                      <div className="overflow-x-auto w-full">
+                        <div className="max-w-xl mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-12 border border-slate-100 min-h-[700px] flex flex-col min-w-[550px] lg:min-w-0">
                         <div className="flex justify-between items-start mb-8">
                           <div>
                             <div className="flex items-center mb-1">
@@ -1176,20 +1181,21 @@ Thank you for your interest in DworkZ.`,
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
                 {/* STEP 2: PDF PREVIEW */}
                 {proposalStep === 2 && (
-                  <div className="flex-1 flex flex-col p-6 gap-4 overflow-hidden">
-                    <div className="flex items-center justify-between shrink-0 px-2">
+                  <div className="flex-1 flex flex-col p-4 sm:p-6 gap-4 overflow-hidden h-[80vh] lg:h-full">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 px-2">
                       <div>
                         <p className="text-textMain font-black text-sm uppercase tracking-tight">Proposal PDF Ready</p>
                         <p className="text-textMuted text-[10px] uppercase font-bold tracking-widest">Review and Download</p>
                       </div>
-                      <div className="flex gap-3">
+                      <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                         {proposalData.pdfData && (
                           <a href={proposalData.pdfData} download={`Proposal_${selectedClient.companyName.replace(/\s+/g,'_')}.pdf`}
-                            className="px-6 py-3 bg-surface border border-borderSubtle text-textMain text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-primary transition-all flex items-center gap-2 shadow-sm">
+                            className="px-4 py-2.5 bg-surface border border-borderSubtle text-textMain text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-primary transition-all flex items-center justify-center gap-2 shadow-sm flex-1 sm:flex-initial">
                             <FileText size={14} className="text-primary"/> Download PDF
                           </a>
                         )}
@@ -1210,7 +1216,7 @@ Thank you for your interest in DworkZ.`,
                             }
                           }}
                           disabled={markingSentLeadId === selectedClient?._id}
-                          className="px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-initial"
                         >
                           {markingSentLeadId === selectedClient?._id 
                             ? <><div className="w-3 h-3 border-2 border-emerald-400 border-t-white rounded-full animate-spin" /> Saving...</>
@@ -1219,7 +1225,7 @@ Thank you for your interest in DworkZ.`,
                       </div>
                     </div>
                     {proposalData.pdfData ? (
-                      <iframe src={proposalData.pdfData} className="flex-1 w-full rounded-2xl border border-borderSubtle" title="Proposal Preview"/>
+                      <iframe src={proposalData.pdfData} className="flex-1 w-full rounded-2xl border border-borderSubtle min-h-[350px] lg:min-h-0" title="Proposal Preview"/>
                     ) : (
                       <div className="flex-1 flex items-center justify-center text-textMuted">Generating PDF...</div>
                     )}
@@ -1228,12 +1234,12 @@ Thank you for your interest in DworkZ.`,
 
                 {/* STEP 3: EMAIL COMPOSER */}
                 {proposalStep === 3 && (
-                  <div className="flex-1 p-8 overflow-y-auto custom-scrollbar flex flex-col gap-5">
+                  <div className="flex-1 p-5 sm:p-8 overflow-y-auto custom-scrollbar flex flex-col gap-5 h-[80vh] lg:h-full">
                     <div>
                       <p className="text-textMain font-bold text-lg mb-1">Compose & Send</p>
                       <p className="text-textMuted text-xs">The PDF is auto-attached. Edit the message if needed.</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-primary uppercase tracking-widest">To (Email)</label>
                         <input type="email" value={proposalData.recipientEmail}
@@ -1251,7 +1257,7 @@ Thank you for your interest in DworkZ.`,
                       <label className="text-[10px] font-black text-primary uppercase tracking-widest">Message</label>
                       <textarea value={proposalData.emailBody}
                         onChange={(e) => setProposalData(d => ({...d, emailBody: e.target.value}))}
-                        className="flex-1 min-h-[200px] w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none resize-none"/>
+                        className="flex-1 min-h-[150px] lg:min-h-[200px] w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none resize-none"/>
                     </div>
                     <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl flex items-center gap-3 shrink-0">
                       <FileText size={20} className="text-primary shrink-0"/>
@@ -1303,7 +1309,7 @@ Thank you for your interest in DworkZ.`,
               </div>
 
               <form onSubmit={handleAddLead} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Contact Person</label>
                     <input 
@@ -1328,7 +1334,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Email Address</label>
                     <input 
@@ -1353,7 +1359,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Enquiry Date</label>
                     <input 
@@ -1379,7 +1385,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Priority</label>
                     <select 
@@ -1404,7 +1410,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Next Follow-up</label>
                     <input 
@@ -1425,7 +1431,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Workspace Preference</label>
                     <select 
@@ -1481,7 +1487,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Plan Type</label>
                     <select 

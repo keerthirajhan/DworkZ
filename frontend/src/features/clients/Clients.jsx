@@ -225,8 +225,8 @@ const Clients = () => {
   };
 
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto space-y-10">
-      <div className="flex justify-between items-center">
+    <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6 sm:space-y-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-textMain uppercase tracking-tight">
             Client Management
@@ -236,7 +236,7 @@ const Clients = () => {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-surface border border-borderSubtle rounded-2xl p-6 shadow-xl">
           <p className="text-[10px] font-bold text-textMuted uppercase tracking-widest mb-1">Total Members</p>
           <p className="text-3xl font-black text-textMain tracking-tighter">{stats.activeClients || 0}</p>
@@ -256,8 +256,8 @@ const Clients = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex justify-between items-center gap-4">
-        <div className="relative flex-1 max-w-md group">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full">
+        <div className="relative flex-1 w-full sm:max-w-md group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-textMuted group-focus-within:text-primary transition-colors" size={18} />
           <input 
             type="text" 
@@ -269,7 +269,7 @@ const Clients = () => {
         </div>
         <button 
           onClick={() => setIsAddModalOpen(true)}
-          className="bg-primary hover:bg-primary/90 text-textMain px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/25 flex items-center gap-2"
+          className="bg-primary hover:bg-primary/90 text-textMain px-6 py-3 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/25 flex items-center gap-2 w-full sm:w-auto justify-center active:scale-95 shrink-0"
         >
           <Plus size={16} /> Add Client
         </button>
@@ -396,7 +396,7 @@ const Clients = () => {
               </div>
               
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
                     <label className="text-xs text-textMuted font-bold uppercase tracking-wider">Contact Person Name *</label>
                     <input name="name" value={formData.name} onChange={handleInputChange} required type="text" className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none transition-all" placeholder="John Doe" />
@@ -503,12 +503,12 @@ const Clients = () => {
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
-              className="bg-surface border border-borderSubtle rounded-[2.5rem] p-0 w-full max-w-4xl shadow-2xl overflow-hidden flex h-[85vh] teal-glow"
+              className="bg-surface border border-borderSubtle rounded-[2.5rem] p-0 w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col lg:flex-row h-[90vh] lg:h-[85vh] teal-glow"
             >
               {/* Left Side: Editor */}
-              <div className="w-[400px] border-r border-borderSubtle p-8 flex flex-col bg-background/50">
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-textMain tracking-tight">Create Proposal</h2>
+              <div className="w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-borderSubtle p-5 lg:p-8 flex flex-col bg-background/50 h-[50vh] lg:h-full shrink-0 overflow-y-auto custom-scrollbar">
+                <div className="mb-6 lg:mb-8">
+                  <h2 className="text-xl lg:text-2xl font-bold text-textMain tracking-tight">Create Proposal</h2>
                   <p className="text-xs text-textMuted mt-1">Customize the offer for {selectedClient.companyName}</p>
                 </div>
                 
@@ -558,7 +558,7 @@ const Clients = () => {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-borderSubtle flex gap-4">
+                <div className="pt-6 border-t border-borderSubtle flex gap-4 shrink-0">
                   <button onClick={() => setIsProposalModalOpen(false)} className="flex-1 py-3 text-sm font-bold text-textMuted hover:text-textMain transition-colors">Cancel</button>
                   <button 
                     onClick={handleSendProposal}
@@ -570,8 +570,8 @@ const Clients = () => {
               </div>
 
               {/* Right Side: Preview */}
-              <div className="flex-1 bg-white p-12 overflow-y-auto custom-scrollbar text-gray-900 font-serif">
-                <div className="flex justify-between items-start border-b-2 border-teal-600 pb-8 mb-10">
+              <div className="flex-1 bg-white p-6 lg:p-12 overflow-y-auto custom-scrollbar text-gray-900 font-serif h-[40vh] lg:h-full">
+                <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-teal-600 pb-6 lg:pb-8 mb-6 lg:mb-10 gap-4">
                   <div>
                     <h1 className="text-4xl font-black text-teal-800 tracking-tighter mb-1">DworkZ</h1>
                     <p className="text-sm text-teal-600 font-sans font-bold uppercase tracking-widest">Workspace Solutions</p>
