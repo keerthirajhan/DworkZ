@@ -189,3 +189,102 @@ exports.forceResetPassword = async (req, res, next) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// @desc    Get all users (Admin only)
+// @route   GET /api/v1/auth/users
+// @access  Private/Admin
+exports.getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}).sort('-createdAt');
+    res.status(200).json({
+      success: true,
+      data: users
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+// @desc    Create a user (Admin only)
+// @route   POST /api/v1/auth/users
+// @access  Private/Admin
+exports.createUser = async (req, res, next) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ success: false, error: 'Please provide all fields (name, email, password, role)' });
+    }
+
+    // Check if user exists (Case-insensitive check)
+    const exists = await User.findOne({ email: email.toLowerCase() });
+    if (exists) {
+      return res.status(400).json({ success: false, error: 'A user with this email already exists' });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role
+    });
+
+    await logActivity({
+      title: 'User Account Created',
+      desc: `Admin ${req.user.name} created a new ${role} account for ${name} (${email})`,
+      type: 'admin',
+      user: req.user._id,
+      userName: req.user.name,
+      color: 'bg-primary'
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
+// @desc    Delete a user (Admin only)
+// @route   DELETE /api/v1/auth/users/:id
+// @access  Private/Admin
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Prevent deleting oneself
+    if (user._id.toString() === req.user.id.toString()) {
+      return res.status(400).json({ success: false, error: 'You cannot delete your own admin account' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    await logActivity({
+      title: 'User Account Deleted',
+      desc: `Admin ${req.user.name} deleted the account of ${user.name} (${user.email})`,
+      type: 'admin',
+      user: req.user._id,
+      userName: req.user.name,
+      color: 'bg-red-500'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+

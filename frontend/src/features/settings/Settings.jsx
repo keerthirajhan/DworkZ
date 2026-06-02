@@ -1,11 +1,105 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Monitor, Shield, Bell, User, Layout, Palette } from 'lucide-react';
+import { Sun, Moon, Monitor, Shield, Bell, User, Layout, Palette, Users, Trash2, Plus } from 'lucide-react';
 
 const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
+  const [currentUser, setCurrentUser] = React.useState(() => {
+    const loggedInUser = localStorage.getItem('dworkz_user');
+    return loggedInUser ? JSON.parse(loggedInUser) : null;
+  });
+  const [isAdmin, setIsAdmin] = React.useState(currentUser?.role === 'admin');
+
+  React.useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const api = (await import('../../utils/api')).default;
+        const res = await api.get('/api/v1/auth/me');
+        if (res.data && res.data.data) {
+          const u = res.data.data;
+          setCurrentUser(u);
+          setIsAdmin(u.role === 'admin');
+          localStorage.setItem('dworkz_user', JSON.stringify({
+            id: u._id,
+            name: u.name,
+            email: u.email,
+            role: u.role
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to verify user role from backend:', err);
+      }
+    };
+    checkRole();
+  }, []);
+
+
   const [activeTab, setActiveTab] = React.useState('Appearance');
   const [tempTheme, setTempTheme] = React.useState(theme);
   const [alert, setAlert] = React.useState(null);
+
+  // User Management State
+  const [users, setUsers] = React.useState([]);
+  const [loadingUsers, setLoadingUsers] = React.useState(false);
+  const [showCreateModal, setShowCreateModal] = React.useState(false);
+  const [newUser, setNewUser] = React.useState({ name: '', email: '', password: '', role: 'staff' });
+  const [creatingUser, setCreatingUser] = React.useState(false);
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const api = (await import('../../utils/api')).default;
+      const res = await api.get('/api/v1/auth/users');
+      setUsers(res.data.data || []);
+    } catch (err) {
+      setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to fetch users.', type: 'error' });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeTab === 'Users' && isAdmin) {
+      fetchUsers();
+    }
+  }, [activeTab, isAdmin]);
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    if (!newUser.name || !newUser.email || !newUser.password || !newUser.role) {
+      return setAlert({ title: 'Error', message: 'All fields are required.', type: 'error' });
+    }
+    if (newUser.password.length < 6) {
+      return setAlert({ title: 'Error', message: 'Password must be at least 6 characters.', type: 'error' });
+    }
+
+    setCreatingUser(true);
+    try {
+      const api = (await import('../../utils/api')).default;
+      await api.post('/api/v1/auth/users', newUser);
+      setNewUser({ name: '', email: '', password: '', role: 'staff' });
+      setShowCreateModal(false);
+      setAlert({ title: 'User Created', message: 'The user account has been successfully created.', type: 'success' });
+      fetchUsers();
+    } catch (err) {
+      setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to create user.', type: 'error' });
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm('Are you sure you want to permanently delete this user?')) return;
+
+    try {
+      const api = (await import('../../utils/api')).default;
+      await api.delete(`/api/v1/auth/users/${userId}`);
+      setAlert({ title: 'User Deleted', message: 'The user account has been deleted successfully.', type: 'success' });
+      fetchUsers();
+    } catch (err) {
+      setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to delete user.', type: 'error' });
+    }
+  };
+
   const [notifications, setNotifications] = React.useState({
     newLead: true,
     agreements: true,
@@ -114,6 +208,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
             { name: 'Profile', icon: User },
             { name: 'Notifications', icon: Bell },
             { name: 'Security', icon: Shield },
+            ...(isAdmin ? [{ name: 'Users', icon: Users }] : []),
           ].map((item) => (
             <button 
               key={item.name}
@@ -399,6 +494,88 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
             </section>
           )}
 
+          {/* Users Tab */}
+          {activeTab === 'Users' && isAdmin && (
+            <section className="bg-surface border border-borderSubtle rounded-3xl p-8 shadow-xl space-y-8">
+              <div className="flex items-center justify-between border-b border-borderSubtle pb-6 flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Users size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-textMain uppercase tracking-tight">User Management</h2>
+                    <p className="text-xs text-textMuted font-medium">View, create, and manage workspace user accounts.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-6 py-3 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                >
+                  <Plus size={14} />
+                  Add User
+                </button>
+              </div>
+
+              {loadingUsers ? (
+                <div className="py-20 flex justify-center">
+                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : users.length === 0 ? (
+                <div className="py-20 text-center text-textMuted space-y-2">
+                  <p className="text-sm font-bold">No users found</p>
+                  <p className="text-xs">Create a new user account to get started.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-borderSubtle/50 text-[10px] font-black text-textMuted uppercase tracking-widest">
+                        <th className="pb-4">Name</th>
+                        <th className="pb-4">Email</th>
+                        <th className="pb-4">Role</th>
+                        <th className="pb-4">Created At</th>
+                        <th className="pb-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-borderSubtle/30 text-sm">
+                      {users.map((userItem) => (
+                        <tr key={userItem._id} className="group hover:bg-background/25 transition-colors">
+                          <td className="py-4 font-bold text-textMain">{userItem.name}</td>
+                          <td className="py-4 text-textMuted">{userItem.email}</td>
+                          <td className="py-4">
+                            <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
+                              userItem.role === 'admin' 
+                                ? 'bg-primary/10 text-primary' 
+                                : userItem.role === 'staff'
+                                ? 'bg-amber-500/10 text-amber-500'
+                                : 'bg-blue-500/10 text-blue-500'
+                            }`}>
+                              {userItem.role}
+                            </span>
+                          </td>
+                          <td className="py-4 text-textMuted text-xs font-semibold">
+                            {userItem.createdAt ? new Date(userItem.createdAt).toLocaleDateString() : 'N/A'}
+                          </td>
+                          <td className="py-4 text-right">
+                            {userItem._id !== (currentUser?._id || currentUser?.id) && (
+                              <button
+                                onClick={() => handleDeleteUser(userItem._id)}
+                                className="p-2 text-textMuted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                title="Delete User"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+          )}
+
         </div>
       </div>
       {/* Floating Action Footer */}
@@ -428,6 +605,89 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
           </div>
         </motion.div>
       )}
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            className="bg-surface border border-borderSubtle p-8 rounded-[2rem] shadow-2xl max-w-md w-full space-y-6"
+          >
+            <div className="flex justify-between items-center border-b border-borderSubtle pb-4">
+              <h3 className="text-xl font-black text-textMain uppercase tracking-tight flex items-center gap-2">
+                <Users className="text-primary" size={24} />
+                Create New User
+              </h3>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="text-textMuted hover:text-textMain font-bold text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Full Name</label>
+                <input 
+                  type="text"
+                  required
+                  placeholder="e.g. Jane Doe"
+                  value={newUser.name} 
+                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                  className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Email Address</label>
+                <input 
+                  type="email"
+                  required
+                  placeholder="e.g. jane@thedworkz.com"
+                  value={newUser.email} 
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Password</label>
+                <input 
+                  type="password"
+                  required
+                  placeholder="At least 6 characters"
+                  value={newUser.password} 
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Role</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none cursor-pointer"
+                >
+                  <option value="staff">Staff</option>
+                  <option value="admin">Admin</option>
+                  <option value="client">Client</option>
+                </select>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={creatingUser}
+                className="w-full py-4 bg-primary text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-102 transition-transform disabled:opacity-50 mt-2"
+              >
+                {creatingUser ? 'Creating User...' : 'Create User'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+
       {/* Alert Portal */}
       {alert && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
