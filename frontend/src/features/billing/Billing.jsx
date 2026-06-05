@@ -163,7 +163,7 @@ const Billing = () => {
   const overdueAmount = invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + getInvoiceTotal(i), 0);
 
   const filteredInvoices = invoices.filter(i => 
-    i.invoiceId.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (i.invoiceId || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
     (i.clientId?.companyName || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 

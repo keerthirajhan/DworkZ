@@ -383,6 +383,27 @@ function App() {
     };
   });
 
+  // Validate token on app startup — force login if token is expired/invalid
+  useEffect(() => {
+    const validateToken = async () => {
+      const storedToken = localStorage.getItem('dworkz_token');
+      if (!storedToken) return;
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        await axios.get(`${API_URL}/api/v1/auth/me`, {
+          headers: { Authorization: `Bearer ${storedToken}` }
+        });
+      } catch (err) {
+        // Token is expired or invalid — force logout
+        localStorage.removeItem('dworkz_token');
+        localStorage.removeItem('dworkz_user');
+        localStorage.removeItem('dworkz_profile');
+        setToken('');
+      }
+    };
+    validateToken();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('dworkz_profile', JSON.stringify(profileData));
   }, [profileData]);
