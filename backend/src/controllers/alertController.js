@@ -11,13 +11,54 @@ const Visitor = require('../models/Visitor');
 exports.getSmartAlerts = async (req, res, next) => {
   try {
     const alerts = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const next24h = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // 1. Payment Reminders (Pending / Overdue Invoices)
-    const unpaidInvoices = await Invoice.find({ 
-      isArchived: { $ne: true }, 
-      status: { $in: ['Pending', 'Overdue'] } 
-    }).populate('clientId', 'name companyName').sort('dueDate');
+    // Fetch all alert data concurrently in one round-trip to database
+    const [
+      unpaidInvoices,
+      awaitingSignatures,
+      newBookings,
+      imminentBookings,
+      recentCancellations,
+      activeInventoryItems,
+      newLeads,
+      activeVisitors
+    ] = await Promise.all([
+      Invoice.find({ 
+        isArchived: { $ne: true }, 
+        status: { $in: ['Pending', 'Overdue'] } 
+      }).populate('clientId', 'name companyName').sort('dueDate'),
+      Client.find({
+        isArchived: { $ne: true },
+        status: 'Awaiting Signature'
+      }),
+      Booking.find({
+        status: 'Confirmed',
+        createdAt: { $gte: yesterday }
+      }).populate('client', 'companyName'),
+      Booking.find({
+        date: { $gte: today, $lte: next24h },
+        status: 'Confirmed'
+      }).populate('client', 'companyName'),
+      Booking.find({
+        status: 'Cancelled',
+        createdAt: { $gte: yesterday } // Use createdAt/updatedAt to capture cancelled today
+      }).populate('client', 'companyName'),
+      Inventory.find({ isArchived: { $ne: true } }),
+      Client.find({
+        isArchived: { $ne: true },
+        status: 'New Lead'
+      }).sort('-createdAt').limit(5),
+      Visitor.find({
+        status: 'Checked In',
+        isArchived: { $ne: true }
+      })
+    ]);
 
+    // 1. Process Unpaid Invoices
     unpaidInvoices.forEach(inv => {
       const isOverdue = new Date(inv.dueDate) < new Date();
       alerts.push({
@@ -31,12 +72,7 @@ exports.getSmartAlerts = async (req, res, next) => {
       });
     });
 
-    // 2. Client Notifications (Awaiting Signatures)
-    const awaitingSignatures = await Client.find({
-      isArchived: { $ne: true },
-      status: 'Awaiting Signature'
-    });
-
+    // 2. Process Awaiting Signatures
     awaitingSignatures.forEach(client => {
       alerts.push({
         id: `sig-${client._id}`,
@@ -49,15 +85,7 @@ exports.getSmartAlerts = async (req, res, next) => {
       });
     });
 
-    // 3. New Bookings (Created in last 24 hours)
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const newBookings = await Booking.find({
-      status: 'Confirmed',
-      createdAt: { $gte: yesterday }
-    }).populate('client', 'companyName');
-
+    // 3. Process New Bookings
     newBookings.forEach(booking => {
       alerts.push({
         id: `new-book-${booking._id}`,
@@ -70,15 +98,8 @@ exports.getSmartAlerts = async (req, res, next) => {
       });
     });
 
-    // 4. Upcoming Meetings (Next 24 hours - Reminder)
-    const next24h = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const imminentBookings = await Booking.find({
-      date: { $gte: today, $lte: next24h },
-      status: 'Confirmed'
-    }).populate('client', 'companyName');
-
+    // 4. Process Upcoming Meetings
     imminentBookings.forEach(booking => {
-      // Avoid duplicating if it was already added as "New Booking"
       if (!alerts.some(a => a.id === `new-book-${booking._id}`)) {
         alerts.push({
           id: `imminent-${booking._id}`,
@@ -87,18 +108,13 @@ exports.getSmartAlerts = async (req, res, next) => {
           type: 'booking',
           color: 'text-blue-500',
           actionLink: '/bookings',
-          createdAt: booking.date, // Use date for sorting imminent ones
+          createdAt: booking.date,
           displayDate: booking.date
         });
       }
     });
 
-    // 5. Recent Cancellations (last 24 hours)
-    const recentCancellations = await Booking.find({
-      status: 'Cancelled',
-      updatedAt: { $gte: yesterday }
-    }).populate('client', 'companyName');
-
+    // 5. Process Recent Cancellations
     recentCancellations.forEach(booking => {
       alerts.push({
         id: `cancel-${booking._id}`,
@@ -107,18 +123,16 @@ exports.getSmartAlerts = async (req, res, next) => {
         type: 'booking',
         color: 'text-rose-500',
         actionLink: '/bookings',
-        createdAt: booking.updatedAt,
+        createdAt: booking.updatedAt || booking.createdAt,
         isUrgent: true
       });
     });
 
-    // 5. Low Stock Alerts
-    const activeInventoryItems = await Inventory.find({ isArchived: { $ne: true } });
+    // 6. Process Low Stock Items
     const lowStockItems = activeInventoryItems.filter(item => {
       if (item.purchasedQuantity <= 0) return false;
       return (item.inHandQuantity / item.purchasedQuantity) <= 0.25;
     });
-
     lowStockItems.forEach(item => {
       alerts.push({
         id: `stock-${item._id}`,
@@ -131,12 +145,7 @@ exports.getSmartAlerts = async (req, res, next) => {
       });
     });
 
-    // 6. New Lead Notifications
-    const newLeads = await Client.find({
-      isArchived: { $ne: true },
-      status: 'New Lead'
-    }).sort('-createdAt').limit(5);
-
+    // 7. Process New Leads
     newLeads.forEach(lead => {
       alerts.push({
         id: `lead-${lead._id}`,
@@ -149,12 +158,7 @@ exports.getSmartAlerts = async (req, res, next) => {
       });
     });
 
-    // 7. Active Visitors
-    const activeVisitors = await Visitor.find({
-      status: 'Checked In',
-      isArchived: { $ne: true }
-    });
-
+    // 8. Process Active Visitors
     activeVisitors.forEach(v => {
       alerts.push({
         id: `vis-${v._id}`,

@@ -199,17 +199,23 @@ const Layout = ({ children, onLogout, profileData }) => {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  const fetchAlerts = React.useCallback(async () => {
+    try {
+      const res = await api.get('/api/v1/alerts');
+      setAlerts(Array.isArray(res.data.data) ? res.data.data : []);
+    } catch (err) {
+      console.error('Failed to fetch alerts', err);
+      setAlerts([]);
+    }
+  }, []);
+
+  // Fetch alerts on path change (lightweight API call, no socket recreation)
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const res = await api.get('/api/v1/alerts');
-        setAlerts(Array.isArray(res.data.data) ? res.data.data : []);
-      } catch (err) {
-        console.error('Failed to fetch alerts', err);
-        setAlerts([]);
-      }
-    };
     fetchAlerts();
+  }, [location.pathname, fetchAlerts]);
+
+  // Persistent Socket & Polling Setup (runs once on layout mount)
+  useEffect(() => {
     const interval = setInterval(fetchAlerts, 15000);
     window.addEventListener('refreshAlerts', fetchAlerts);
     const socket = io(API_URL);
@@ -219,7 +225,7 @@ const Layout = ({ children, onLogout, profileData }) => {
       window.removeEventListener('refreshAlerts', fetchAlerts);
       socket.disconnect();
     };
-  }, [location.pathname]);
+  }, [fetchAlerts]);
 
   const unreadCount = Array.isArray(alerts)
     ? alerts.filter(a => a && a.createdAt && new Date(a.createdAt).getTime() > lastViewedTime).length

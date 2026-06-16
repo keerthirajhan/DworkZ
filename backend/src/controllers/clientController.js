@@ -396,29 +396,31 @@ exports.getAgreements = async (req, res, next) => {
 // @access  Private (Admin/Staff)
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    // Aggregate counts for CRM Pipeline (excluding archived)
     const baseQuery = { isArchived: { $ne: true } };
     
-    const leads = await Client.countDocuments({ ...baseQuery, status: { $in: ['New Lead', 'Contacted', 'Negotiation', 'Proposal Sent', 'Awaiting Signature'] } });
-    const proposalsSent = await Client.countDocuments({ ...baseQuery, status: 'Proposal Sent' });
-    const awaitingSignature = await Client.countDocuments({ ...baseQuery, status: 'Awaiting Signature' });
-    
-    // Calculate total revenue from ALL Paid invoices (Members + Guests)
-    const paidInvoices = await Invoice.find({ isArchived: { $ne: true }, status: 'Paid' });
+    // Execute all database queries in parallel to eliminate network latency compilation
+    const [
+      leads,
+      proposalsSent,
+      awaitingSignature,
+      paidInvoices,
+      activeMembers,
+      pendingInvoices,
+      creditInventory
+    ] = await Promise.all([
+      Client.countDocuments({ ...baseQuery, status: { $in: ['New Lead', 'Contacted', 'Negotiation', 'Proposal Sent', 'Awaiting Signature'] } }),
+      Client.countDocuments({ ...baseQuery, status: 'Proposal Sent' }),
+      Client.countDocuments({ ...baseQuery, status: 'Awaiting Signature' }),
+      Invoice.find({ isArchived: { $ne: true }, status: 'Paid' }),
+      Client.find({ ...baseQuery, status: 'Active' }),
+      Invoice.find({ isArchived: { $ne: true }, status: { $in: ['Pending', 'Overdue'] } }),
+      Inventory.find({ isArchived: { $ne: true }, paymentStatus: 'Credit' })
+    ]);
+
     const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-    
-    const activeMembers = await Client.find({ ...baseQuery, status: 'Active' });
     const activeClients = activeMembers.length;
-    
-    // Calculate occupancy rate (active clients / 40 capacity)
     const occupancyRate = Math.min(100, (activeClients / 40) * 100).toFixed(1);
-
-    // Calculate Pending Receivables (Unpaid Invoices)
-    const pendingInvoices = await Invoice.find({ isArchived: { $ne: true }, status: { $in: ['Pending', 'Overdue'] } });
     const pendingReceivable = pendingInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-
-    // Calculate Pending Payables (Inventory bought on Credit)
-    const creditInventory = await Inventory.find({ isArchived: { $ne: true }, paymentStatus: 'Credit' });
     const pendingPayable = creditInventory.reduce((sum, item) => sum + (item.totalCost || 0), 0);
 
     res.status(200).json({
