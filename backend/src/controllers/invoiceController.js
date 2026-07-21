@@ -155,6 +155,7 @@ exports.generateGuestInvoice = async (req, res) => {
     const rate = booking.hourlyRate || 500;
     const duration = Number(booking.duration) || 0;
     const totalAmount = duration * rate;
+    const now = new Date();
 
     const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
     let sequenceNum = 1;
