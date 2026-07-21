@@ -57,11 +57,14 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const rawFrontendUrl = process.env.FRONTEND_URL || '';
+const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || '';
 
-// In development, allow multiple possible frontend origins
-const allowedOrigins = [
-  FRONTEND_URL,
+// Base list of explicitly allowed origins
+const defaultOrigins = [
+  'https://app.thedworkz.com',
+  'https://thedworkz.com',
+  'https://www.thedworkz.com',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:8888',
@@ -70,10 +73,29 @@ const allowedOrigins = [
   'http://127.0.0.1:8888',
 ];
 
+// Combine origins from FRONTEND_URL, ALLOWED_ORIGINS, and defaults
+const envOrigins = [rawFrontendUrl, ...rawAllowedOrigins.split(',')]
+  .map(url => url.trim())
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]))
+  .map(origin => origin.replace(/\/+$/, ''));
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const cleanOrigin = origin.replace(/\/+$/, '');
+
+    // Allow if explicitly listed OR if it's any domain/subdomain under thedworkz.com
+    const isAllowed =
+      allowedOrigins.includes(cleanOrigin) ||
+      /^https?:\/\/([a-zA-Z0-9-]+\.)*thedworkz\.com$/i.test(cleanOrigin);
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
@@ -81,6 +103,7 @@ const corsOptions = {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   credentials: true
 };
 
@@ -89,13 +112,13 @@ const io = new Server(server, { cors: corsOptions });
 // Make io accessible via global (or req.app.set)
 global.io = io;
 
+// Enable CORS early in middleware stack
+app.use(cors(corsOptions));
+
 // Body parser with increased limit for high-res images/PDFs
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
-
-// Enable CORS
-app.use(cors(corsOptions));
 
 // Set security HTTP headers (relaxed for cross-origin in dev)
 app.use(helmet({
