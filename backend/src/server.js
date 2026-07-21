@@ -28,6 +28,19 @@ const connectDB = async () => {
       }
       console.log('Migration complete!');
     }
+
+    // Drop stale invoiceNumber index (schema now uses invoiceId)
+    try {
+      const invoiceCollection = conn.connection.collection('invoices');
+      const indexes = await invoiceCollection.indexes();
+      if (indexes.some(idx => idx.name === 'invoiceNumber_1')) {
+        await invoiceCollection.dropIndex('invoiceNumber_1');
+        console.log('Dropped stale invoiceNumber_1 index from invoices collection.');
+      }
+    } catch (indexErr) {
+      // Ignore if index doesn't exist
+      if (indexErr.code !== 27) console.warn('Index cleanup warning:', indexErr.message);
+    }
   } catch (err) {
     console.error(`Error: ${err.message}`);
     process.exit(1);
