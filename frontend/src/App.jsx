@@ -395,12 +395,12 @@ function App() {
       const storedToken = localStorage.getItem('dworkz_token');
       if (!storedToken) return;
       try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        await axios.get(`${API_URL}/api/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${storedToken}` }
-        });
+        // Use the shared `api` instance (not raw axios) so an expired access token
+        // goes through the response interceptor and gets silently refreshed instead
+        // of immediately forcing a logout on every page reload.
+        await api.get('/api/v1/auth/me');
       } catch (err) {
-        // Token is expired or invalid — force logout
+        // Refresh (attempted by the api interceptor) also failed — force logout
         localStorage.removeItem('dworkz_token');
         localStorage.removeItem('dworkz_user');
         localStorage.removeItem('dworkz_profile');
