@@ -412,7 +412,11 @@ exports.getDashboardStats = async (req, res, next) => {
       Client.countDocuments({ ...baseQuery, status: 'Proposal Sent' }),
       Client.countDocuments({ ...baseQuery, status: 'Awaiting Signature' }),
       Invoice.find({ isArchived: { $ne: true }, status: 'Paid' }),
-      Client.find({ ...baseQuery, status: 'Active' }),
+      // "Active" members include both direct-add clients (status: 'Active') and
+      // lead-pipeline clients that have completed conversion (status: 'Converted').
+      // Previously this only matched 'Active', which silently excluded every
+      // lead-converted client from the Total Members / Occupancy tiles (BUG-04).
+      Client.find({ ...baseQuery, status: { $in: ['Active', 'Converted'] } }),
       Invoice.find({ isArchived: { $ne: true }, status: { $in: ['Pending', 'Overdue'] } }),
       Inventory.find({ isArchived: { $ne: true }, paymentStatus: 'Credit' })
     ]);

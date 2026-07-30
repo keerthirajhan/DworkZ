@@ -214,15 +214,24 @@ const Layout = ({ children, onLogout, profileData }) => {
     fetchAlerts();
   }, [location.pathname, fetchAlerts]);
 
+  
   // Persistent Socket & Polling Setup (runs once on layout mount)
   useEffect(() => {
-    const interval = setInterval(fetchAlerts, 15000);
+    // Poll at a much lower frequency (was every 15s = 240+ calls/hour per open tab)
+    // and skip the tick entirely while the tab isn't visible, since bookingUpdated
+    // socket events + the route-change fetch already keep alerts fresh in the common case.
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchAlerts();
+    }, 60000);
     window.addEventListener('refreshAlerts', fetchAlerts);
+    const handleVisibility = () => { if (!document.hidden) fetchAlerts(); };
+    document.addEventListener('visibilitychange', handleVisibility);
     const socket = io(API_URL);
     socket.on('bookingUpdated', fetchAlerts);
     return () => {
       clearInterval(interval);
       window.removeEventListener('refreshAlerts', fetchAlerts);
+      document.removeEventListener('visibilitychange', handleVisibility);
       socket.disconnect();
     };
   }, [fetchAlerts]);
