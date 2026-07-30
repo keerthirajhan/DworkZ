@@ -365,7 +365,7 @@ const Bookings = () => {
                   </div>
                   <div className="space-y-1.5 col-span-1 sm:col-span-2">
                     <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Meeting Date</label>
-                    <input required type="date" value={bookingData.date} onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain font-bold outline-none focus:border-primary" />
+                    <input required type="date" min={new Date().toISOString().split('T')[0]} value={bookingData.date} onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain font-bold outline-none focus:border-primary" />
                   </div>
                 </div>
 

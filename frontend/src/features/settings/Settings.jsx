@@ -126,7 +126,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
   const handleUpdateProfile = () => {
     setAlert({ title: 'Profile Updated', message: 'Your administrative profile has been saved successfully.', type: 'success' });
   };
-  const [passwords, setPasswords] = React.useState({ current: '', new: '' });
+  const [passwords, setPasswords] = React.useState({ current: '', new: '', confirm: '' });
   const [updatingPass, setUpdatingPass] = React.useState(false);
   const [forceResetMode, setForceResetMode] = React.useState(false);
 
@@ -136,12 +136,13 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
         return setAlert({ title: 'Error', message: 'Please provide a new password.', type: 'error' });
       }
       if (passwords.new.length < 6) return setAlert({ title: 'Error', message: 'New password must be at least 6 characters.', type: 'error' });
+      if (passwords.new !== passwords.confirm) return setAlert({ title: 'Error', message: 'New password and confirmation do not match.', type: 'error' });
       setUpdatingPass(true);
       try {
         const api = (await import('../../utils/api')).default;
         await api.post('/api/v1/auth/force-reset-password', { newPassword: passwords.new });
         setForceResetMode(false);
-        setPasswords({ current: '', new: '' });
+        setPasswords({ current: '', new: '', confirm: '' });
         setAlert({ title: 'Password Reset', message: 'Your password has been successfully reset.', type: 'success' });
       } catch (err) {
         setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to force reset password.', type: 'error' });
@@ -157,6 +158,9 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
     if (passwords.new.length < 6) {
       return setAlert({ title: 'Error', message: 'New password must be at least 6 characters.', type: 'error' });
     }
+    if (passwords.new !== passwords.confirm) {
+      return setAlert({ title: 'Error', message: 'New password and confirmation do not match.', type: 'error' });
+    }
     
     setUpdatingPass(true);
     try {
@@ -165,7 +169,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
         currentPassword: passwords.current,
         newPassword: passwords.new
       });
-      setPasswords({ current: '', new: '' });
+      setPasswords({ current: '', new: '', confirm: '' });
       setAlert({ title: 'Password Updated', message: 'Your security credentials have been successfully updated.', type: 'success' });
     } catch (err) {
       setAlert({ title: 'Error', message: err.response?.data?.error || 'Failed to update password.', type: 'error' });
@@ -446,6 +450,13 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                       placeholder="New Password" 
                       value={passwords.new}
                       onChange={(e) => setPasswords({...passwords, new: e.target.value})}
+                      className="w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none" 
+                    />
+                    <input 
+                      type="password" 
+                      placeholder="Confirm New Password" 
+                      value={passwords.confirm}
+                      onChange={(e) => setPasswords({...passwords, confirm: e.target.value})}
                       className={`w-full bg-surface border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary focus:outline-none ${forceResetMode ? 'md:col-span-2' : ''}`} 
                     />
                   </div>

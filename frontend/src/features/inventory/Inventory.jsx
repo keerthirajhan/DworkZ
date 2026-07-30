@@ -493,7 +493,7 @@ const Inventory = () => {
                  <ShieldAlert size={40} />
               </div>
               <h3 className="text-2xl font-black text-textMain mb-3 uppercase tracking-tight">Security Check</h3>
-              <p className="text-sm text-textMuted mb-10 leading-relaxed font-medium">You are about to permanently remove <span className="text-rose-500 font-bold">"{itemToDelete?.itemName}"</span> from the inventory. This action is irreversible.</p>
+              <p className="text-sm text-textMuted mb-10 leading-relaxed font-medium">You are about to remove <span className="text-rose-500 font-bold">"{itemToDelete?.itemName}"</span> from the active inventory. It will be moved to Archives, where it can be restored or permanently deleted later.</p>
               <div className="flex gap-4">
                 <button 
                   onClick={handleDelete} 

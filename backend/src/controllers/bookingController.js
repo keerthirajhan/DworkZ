@@ -68,6 +68,18 @@ exports.getTodayBookings = async (req, res, next) => {
 exports.createPublicBooking = async (req, res, next) => {
   try {
     const { date, startTime, endTime, clientName, email, phone, hourlyRate } = req.body;
+
+    // Reject bookings for dates that have already passed
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(date);
+    bookingDate.setHours(0, 0, 0, 0);
+    if (bookingDate < today) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot create a booking for a past date.'
+      });
+    }
     
     // Calculate Duration
     const s = parseInt(startTime.split(':')[0]);
@@ -123,6 +135,18 @@ exports.createPublicBooking = async (req, res, next) => {
 exports.createBooking = async (req, res, next) => {
   try {
     const { date, startTime, endTime } = req.body;
+
+    // Reject bookings for dates that have already passed
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(date);
+    bookingDate.setHours(0, 0, 0, 0);
+    if (bookingDate < today) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot create a booking for a past date.'
+      });
+    }
 
     // Calculate Duration
     const s = parseInt(startTime.split(':')[0]);
