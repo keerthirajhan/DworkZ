@@ -85,12 +85,12 @@ exports.generateInvoices = async (req, res) => {
       const bookings = await Booking.find({ client: client._id, date: { $gte: startOfMonth }, status: 'Confirmed' });
       const utilizedHours = bookings.reduce((sum, b) => sum + (Number(b.duration) || 0), 0);
       
-      const baseAmount = Number(client.rentAmount) || 0;
+      const baseAmount = Number((Number(client.rentAmount) || 0).toFixed(2));
       const overageHours = Math.max(0, utilizedHours - ALLOWED_HOURS);
       
       // Use client-specific rate if available, else default to 500
       const clientRate = client.pricingDetails?.meetingRoomRate || 500;
-      const overageAmount = overageHours * clientRate;
+      const overageAmount = Number((overageHours * clientRate).toFixed(2));
       const subTotal = baseAmount + overageAmount;
       const cgstAmount = Number((subTotal * 0.09).toFixed(2));
       const sgstAmount = Number((subTotal * 0.09).toFixed(2));
@@ -154,7 +154,7 @@ exports.generateGuestInvoice = async (req, res) => {
     // Use specific rate from booking or default to 500
     const rate = booking.hourlyRate || 500;
     const duration = Number(booking.duration) || 0;
-    const totalAmount = duration * rate;
+    const totalAmount = Number((duration * rate).toFixed(2));
     const now = new Date();
 
     const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
@@ -359,7 +359,7 @@ exports.generateVisitorInvoice = async (req, res) => {
     }
 
     const days = Math.max(1, Number(numberOfDays) || 1);
-    const baseAmount = (Number(amount) || 0) * days;
+    const baseAmount = Number(((Number(amount) || 0) * days).toFixed(2));
     let cgstAmount = 0;
     let sgstAmount = 0;
     let totalAmount = baseAmount;
