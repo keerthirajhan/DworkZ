@@ -561,11 +561,17 @@ Thank you for your interest in DworkZ.`,
       preferredDate: 'Preferred Start'
     };
 
+    const missingFields = [];
+
     for (const [key, label] of Object.entries(requiredFields)) {
       if (!newLead[key] || String(newLead[key]).trim() === '') {
-        showAlert('Validation Error', `${label} is required.`);
-        return;
+        missingFields.push(label);
       }
+    }
+
+    if (missingFields.length > 0) {
+      showAlert('Validation Error', `Please fill in the following required fields: ${missingFields.join(', ')}.`);
+      return;
     }
 
     // Budget Range Validation: Must contain at least one digit
@@ -1305,13 +1311,13 @@ Thank you for your interest in DworkZ.`,
             >
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-textMain tracking-tight">{newLead._id ? 'Update Lead Details' : 'Capture New Inquiry'}</h2>
-                <p className="text-sm text-textMuted mt-1">{newLead._id ? 'Refine lead information and requirements.' : 'Capture detailed requirements to generate a tailored proposal.'}</p>
+                <p className="text-sm text-textMuted mt-1">{newLead._id ? 'Refine lead information and requirements.' : 'Capture detailed requirements to generate a tailored proposal.'} <span className="text-rose-400">*</span> indicates a required field.</p>
               </div>
 
               <form onSubmit={handleAddLead} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Contact Person</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Contact Person <span className="text-rose-400">*</span></label>
                     <input 
                       required
                       type="text" 
@@ -1322,7 +1328,7 @@ Thank you for your interest in DworkZ.`,
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Company / Brand</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Company / Brand <span className="text-rose-400">*</span></label>
                     <input 
                       required
                       type="text" 
@@ -1336,7 +1342,7 @@ Thank you for your interest in DworkZ.`,
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Email Address</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Email Address <span className="text-rose-400">*</span></label>
                     <input 
                       required
                       type="email" 
@@ -1347,7 +1353,7 @@ Thank you for your interest in DworkZ.`,
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Phone Number</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Phone Number <span className="text-rose-400">*</span></label>
                     <input 
                       required
                       type="text" 
@@ -1361,8 +1367,9 @@ Thank you for your interest in DworkZ.`,
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Enquiry Date</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Enquiry Date <span className="text-rose-400">*</span></label>
                     <input 
+                      required
                       type="date" 
                       value={newLead.enquiryDate}
                       onChange={(e) => setNewLead({...newLead, enquiryDate: e.target.value})}
@@ -1399,8 +1406,9 @@ Thank you for your interest in DworkZ.`,
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Budget Range (₹)</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Budget Range (₹) <span className="text-rose-400">*</span></label>
                     <input 
+                      required
                       type="text" 
                       placeholder="e.g. 15k - 20k"
                       value={newLead.budgetRange}
@@ -1412,8 +1420,9 @@ Thank you for your interest in DworkZ.`,
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Next Follow-up</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Next Follow-up <span className="text-rose-400">*</span></label>
                     <input 
+                      required
                       type="date" 
                       value={newLead.nextFollowUp}
                       onChange={(e) => setNewLead({...newLead, nextFollowUp: e.target.value})}
@@ -1421,8 +1430,9 @@ Thank you for your interest in DworkZ.`,
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Preferred Start</label>
+                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest">Preferred Start <span className="text-rose-400">*</span></label>
                     <input 
+                      required
                       type="date" 
                       value={newLead.preferredDate}
                       onChange={(e) => setNewLead({...newLead, preferredDate: e.target.value})}
@@ -1450,7 +1460,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                      Seats Needed {newLead.workspaceType === 'Individual Seat' && <span className="text-textMuted normal-case font-normal">(Fixed: 1)</span>}
+                      	Seats Needed <span className="text-rose-400">*</span> {newLead.workspaceType === 'Individual Seat' && <span className="text-textMuted normal-case font-normal">(Fixed: 1)</span>}
                     </label>
                     {newLead.workspaceType === 'Individual Seat' ? (
                       <div className="flex items-center bg-background/50 border border-borderSubtle rounded-xl overflow-hidden opacity-60 cursor-not-allowed">
