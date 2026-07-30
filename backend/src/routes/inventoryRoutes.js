@@ -16,7 +16,7 @@ router.route('/')
   .post(authorize('admin', 'staff'), addInventoryItem);
 
 router.route('/:id')
-  .put(updateInventoryItem)
-  .delete(deleteInventoryItem);
+  .put(authorize('admin', 'staff'), updateInventoryItem)
+  .delete(authorize('admin', 'staff'), deleteInventoryItem);
 
 module.exports = router;
