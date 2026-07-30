@@ -44,6 +44,7 @@ const Bookings = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', type: 'success' });
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
 
   const showAlert = (title, message, type = 'success') => {
     setAlertConfig({ isOpen: true, title, message, type });
@@ -353,15 +354,48 @@ const Bookings = () => {
                         {bookingData.isGuest ? 'Switch to Member' : 'Switch to Guest'}
                       </button>
                     </div>
-                    <input required type="text" placeholder={bookingData.isGuest ? "Guest Name..." : "Search member company..."} value={bookingData.clientName} 
+                    <input required type="text" placeholder={bookingData.isGuest ? "Guest Name..." : "Search member company..."} value={bookingData.clientName}
+                      autoComplete="off"
+                      onFocus={() => { if (!bookingData.isGuest) setShowClientDropdown(true); }}
+                      onBlur={() => setTimeout(() => setShowClientDropdown(false), 150)}
                       onChange={(e) => {
                         const val = e.target.value;
                         const found = !bookingData.isGuest ? clients.find(c => (c.companyName || c.name)?.toLowerCase() === val.toLowerCase()) : null;
                         setBookingData({ ...bookingData, clientName: val, clientId: found ? found._id : '' });
-                      }} 
-                      list={bookingData.isGuest ? "" : "client-list"} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary outline-none font-bold" 
+                        if (!bookingData.isGuest) setShowClientDropdown(true);
+                      }}
+                      className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain focus:border-primary outline-none font-bold"
                     />
-                    {!bookingData.isGuest && <datalist id="client-list">{clients.map(c => <option key={c._id} value={c.companyName || c.name} />)}</datalist>}
+                    {!bookingData.isGuest && showClientDropdown && (() => {
+                      const query = bookingData.clientName.toLowerCase();
+                      const matches = clients.filter(c => (c.companyName || c.name || '').toLowerCase().includes(query)).slice(0, 8);
+                      return matches.length > 0 ? (
+                        <div className="relative z-20">
+                          <div className="absolute top-1 left-0 right-0 bg-surface border border-borderSubtle rounded-xl shadow-2xl max-h-56 overflow-y-auto custom-scrollbar">
+                            {matches.map(c => (
+                              <button
+                                type="button"
+                                key={c._id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  setBookingData({ ...bookingData, clientName: c.companyName || c.name, clientId: c._id });
+                                  setShowClientDropdown(false);
+                                }}
+                                className="w-full text-left px-4 py-3 text-sm font-bold text-textMain hover:bg-primary/10 transition-colors border-b border-borderSubtle last:border-b-0"
+                              >
+                                {c.companyName || c.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="relative z-20">
+                          <div className="absolute top-1 left-0 right-0 bg-surface border border-borderSubtle rounded-xl shadow-2xl px-4 py-3 text-xs font-bold text-textMuted">
+                            No matching clients found.
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-1.5 col-span-1 sm:col-span-2">
                     <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Meeting Date</label>
