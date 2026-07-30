@@ -93,7 +93,11 @@ const sendTokenResponse = async (user, statusCode, res) => {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax' // Better for cross-port development
+    // Lax cookies are never sent on cross-site XHR/fetch requests (only top-level navigations).
+    // Since the frontend (app.thedworkz.com) and backend (onrender.com) are on different domains,
+    // every API call is cross-site — so this MUST be 'none' in production, paired with secure:true,
+    // or the browser silently drops the refresh cookie and /auth/refresh always 401s.
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   };
 
   res

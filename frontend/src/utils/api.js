@@ -22,6 +22,9 @@ api.interceptors.request.use(
 );
 
 // Response interceptor for handling 401s and token refreshes
+let isRefreshing = false;
+let refreshPromise = null;
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -41,12 +44,21 @@ api.interceptors.response.use(
       }
 
       try {
-        const res = await axios.post(`${API_URL}/api/v1/auth/refresh`, {}, { withCredentials: true });
+        // Multiple requests can 401 at the same moment (e.g. on page load). Since the
+        // refresh token rotates on every use, firing a separate refresh call per request
+        // would make all but the first one fail. Share a single in-flight refresh instead.
+        if (!isRefreshing) {
+          isRefreshing = true;
+          refreshPromise = axios.post(`${API_URL}/api/v1/auth/refresh`, {}, { withCredentials: true })
+            .finally(() => { isRefreshing = false; });
+        }
+        const res = await refreshPromise;
         if (res.data.success) {
           localStorage.setItem('dworkz_token', res.data.token);
           originalRequest.headers.Authorization = `Bearer ${res.data.token}`;
           return api(originalRequest);
         }
+        return Promise.reject(error);
       } catch (err) {
         // Refresh failed, clear all session data
         const isClientPortal = window.location.pathname.startsWith('/client-portal');
