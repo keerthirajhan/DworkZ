@@ -152,7 +152,12 @@ exports.updatePassword = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'Current password is incorrect' });
     }
 
-    user.password = req.body.newPassword;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      return res.status(400).json({ success: false, error: 'New password must be at least 8 characters and contain both a letter and a number.' });
+    }
+
+    user.password = newPassword;
     await user.save();
 
     res.status(200).json({ success: true, message: 'Password updated successfully' });
@@ -167,8 +172,8 @@ exports.forceResetPassword = async (req, res, next) => {
   try {
     const { newPassword } = req.body;
     
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ success: false, error: 'New password must be at least 6 characters.' });
+    if (!newPassword || newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      return res.status(400).json({ success: false, error: 'New password must be at least 8 characters and contain both a letter and a number.' });
     }
 
     const user = await User.findById(req.user.id).select('+password');

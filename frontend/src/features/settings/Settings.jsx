@@ -68,8 +68,8 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
     if (!newUser.name || !newUser.email || !newUser.password || !newUser.role) {
       return setAlert({ title: 'Error', message: 'All fields are required.', type: 'error' });
     }
-    if (newUser.password.length < 6) {
-      return setAlert({ title: 'Error', message: 'Password must be at least 6 characters.', type: 'error' });
+    if (newUser.password.length < 8 || !/[A-Za-z]/.test(newUser.password) || !/\d/.test(newUser.password)) {
+      return setAlert({ title: 'Error', message: 'Password must be at least 8 characters and contain both a letter and a number.', type: 'error' });
     }
 
     setCreatingUser(true);
@@ -135,7 +135,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
       if (!passwords.new) {
         return setAlert({ title: 'Error', message: 'Please provide a new password.', type: 'error' });
       }
-      if (passwords.new.length < 6) return setAlert({ title: 'Error', message: 'New password must be at least 6 characters.', type: 'error' });
+      if (passwords.new.length < 8 || !/[A-Za-z]/.test(passwords.new) || !/\d/.test(passwords.new)) return setAlert({ title: 'Error', message: 'New password must be at least 8 characters and contain both a letter and a number.', type: 'error' });
       if (passwords.new !== passwords.confirm) return setAlert({ title: 'Error', message: 'New password and confirmation do not match.', type: 'error' });
       setUpdatingPass(true);
       try {
@@ -155,8 +155,8 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
     if (!passwords.current || !passwords.new) {
       return setAlert({ title: 'Error', message: 'Please fill in both password fields.', type: 'error' });
     }
-    if (passwords.new.length < 6) {
-      return setAlert({ title: 'Error', message: 'New password must be at least 6 characters.', type: 'error' });
+    if (passwords.new.length < 8 || !/[A-Za-z]/.test(passwords.new) || !/\d/.test(passwords.new)) {
+      return setAlert({ title: 'Error', message: 'New password must be at least 8 characters and contain both a letter and a number.', type: 'error' });
     }
     if (passwords.new !== passwords.confirm) {
       return setAlert({ title: 'Error', message: 'New password and confirmation do not match.', type: 'error' });

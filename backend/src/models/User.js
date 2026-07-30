@@ -25,7 +25,16 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please add a password'],
-    minlength: 6,
+    minlength: [8, 'Password must be at least 8 characters long'],
+    validate: {
+      validator: function (value) {
+        // Only enforce complexity for a plaintext password being set/changed.
+        // Skip already-hashed values (bcrypt hashes are 60 chars and start with $2).
+        if (/^\$2[aby]\$/.test(value)) return true;
+        return /[A-Za-z]/.test(value) && /\d/.test(value);
+      },
+      message: 'Password must contain at least one letter and one number'
+    },
     select: false // Do not return password by default
   },
   createdAt: {
