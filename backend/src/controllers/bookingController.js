@@ -314,6 +314,53 @@ exports.cancelBooking = async (req, res, next) => {
   }
 };
 
+// @desc    Restore a cancelled/archived booking back to Confirmed
+// @route   PUT /api/v1/bookings/:id/restore
+// @access  Private (Admin/Staff)
+exports.restoreBooking = async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ success: false, error: 'Booking not found' });
+    }
+
+    // The slot may have since been booked by someone else while this one was
+    // cancelled — check before restoring rather than silently double-booking.
+    const overlap = await Booking.findOne({
+      _id: { $ne: req.params.id },
+      date: booking.date,
+      status: 'Confirmed',
+      $or: [
+        { startTime: { $lt: booking.endTime }, endTime: { $gt: booking.startTime } }
+      ]
+    });
+
+    if (overlap) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot restore — this slot is now booked by ${overlap.clientName} (${overlap.startTime} - ${overlap.endTime}).`
+      });
+    }
+
+    booking.status = 'Confirmed';
+    await booking.save();
+
+    await logActivity({
+      title: 'Booking Restored',
+      desc: `Meeting room booking for ${booking.clientName} on ${new Date(booking.date).toLocaleDateString()} was restored`,
+      type: 'booking',
+      user: req.user.id,
+      userName: req.user.name,
+      color: 'bg-emerald-500'
+    });
+
+    global.io?.emit('bookingUpdated');
+
+    res.status(200).json({ success: true, data: booking });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
 // @desc    Permanently delete a booking
 // @route   DELETE /api/v1/bookings/:id/permanent
 // @access  Private (Admin Only)
