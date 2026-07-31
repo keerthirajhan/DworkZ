@@ -80,6 +80,21 @@ exports.createPublicBooking = async (req, res, next) => {
         error: 'Cannot create a booking for a past date.'
       });
     }
+
+    // For today's date specifically, also reject a time slot that has
+    // already elapsed — a past date-check alone doesn't catch "9-10 AM"
+    // being booked when it's currently past 10 AM today.
+    if (bookingDate.getTime() === today.getTime()) {
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const slotStart = new Date(date);
+      slotStart.setHours(startHour, startMinute || 0, 0, 0);
+      if (slotStart <= new Date()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Cannot create a booking for a time slot that has already passed today.'
+        });
+      }
+    }
     
     // Calculate Duration
     const s = parseInt(startTime.split(':')[0]);
@@ -146,6 +161,21 @@ exports.createBooking = async (req, res, next) => {
         success: false,
         error: 'Cannot create a booking for a past date.'
       });
+    }
+
+    // For today's date specifically, also reject a time slot that has
+    // already elapsed — a past date-check alone doesn't catch "9-10 AM"
+    // being booked when it's currently past 10 AM today.
+    if (bookingDate.getTime() === today.getTime()) {
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const slotStart = new Date(date);
+      slotStart.setHours(startHour, startMinute || 0, 0, 0);
+      if (slotStart <= new Date()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Cannot create a booking for a time slot that has already passed today.'
+        });
+      }
     }
 
     // Calculate Duration
@@ -361,6 +391,7 @@ exports.restoreBooking = async (req, res, next) => {
     res.status(400).json({ success: false, error: err.message });
   }
 };
+
 // @desc    Permanently delete a booking
 // @route   DELETE /api/v1/bookings/:id/permanent
 // @access  Private (Admin Only)
