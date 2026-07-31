@@ -40,6 +40,8 @@ const Dashboard = () => {
 
   const [user, setUser] = useState(null);
 
+  // If loading takes more than 8s, distinguish "still working" from "broken"
+  // instead of an indefinite spinner that looks identical either way.
   useEffect(() => {
     if (!loading) {
       setSlowLoading(false);
@@ -59,18 +61,22 @@ const Dashboard = () => {
       try {
         const token = localStorage.getItem('dworkz_token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        
-        // Fetch Stats
-        const statsRes = await axios.get(`${API_URL}/api/v1/clients/stats`, config);
-        const s = statsRes.data.data;
-        
-        // Fetch Activities
-        const actRes = await axios.get(`${API_URL}/api/v1/activities`, config);
-        setActivities(actRes.data.data);
 
-        // Fetch Bookings
-        const bookRes = await axios.get(`${API_URL}/api/v1/bookings/today`, config);
+        // These 4 calls are fully independent of each other, so run them in
+        // parallel instead of one-after-another — previously this waited for
+        // the sum of all 4 round-trips before the Dashboard could render at
+        // all; now it only waits for the slowest single one.
+        const [statsRes, actRes, bookRes, utilRes] = await Promise.all([
+          axios.get(`${API_URL}/api/v1/clients/stats`, config),
+          axios.get(`${API_URL}/api/v1/activities`, config),
+          axios.get(`${API_URL}/api/v1/bookings/today`, config),
+          axios.get(`${API_URL}/api/v1/utilization`, config)
+        ]);
+
+        const s = statsRes.data.data;
+        setActivities(actRes.data.data);
         setBookings(bookRes.data.data);
+        setUtilization(utilRes.data.data);
 
         setConversion({
           leads: s?.leads || 0,
@@ -86,10 +92,6 @@ const Dashboard = () => {
           { title: 'Pending Receivable', value: `₹${(s?.pendingReceivable || 0).toLocaleString()}`, icon: IndianRupee, trend: 'To Collect', color: 'text-emerald-400' },
           { title: 'Pending Payable', value: `₹${(s?.pendingPayable || 0).toLocaleString()}`, icon: IndianRupee, trend: 'To Pay', color: 'text-rose-400' },
         ]);
-
-        // Fetch Utilization
-        const utilRes = await axios.get(`${API_URL}/api/v1/utilization`, config);
-        setUtilization(utilRes.data.data);
       } catch (err) {
         console.error('Failed to fetch dashboard data', err);
       } finally {
