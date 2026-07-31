@@ -1119,7 +1119,7 @@ Thank you for your interest in DworkZ.`,
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">GST No. 33AAZFD3031H1ZG</p>
                           </div>
                           <div className="text-right space-y-0.5">
-                            <p className="text-[10px] font-bold text-slate-500">Address: TV Swamy Road, Coimbatore</p>
+                            <p className="text-[10px] font-bold text-slate-500">Address: TV Swamy Road, R S Puram, Coimbatore</p>
                             <p className="text-[10px] font-bold text-slate-500">Contact: +91 9442944363 |</p>
                           </div>
                         </div>
