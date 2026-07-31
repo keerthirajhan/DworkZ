@@ -1,43 +1,27 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import api, { API_URL } from './utils/api';
 import ErrorToast from './components/ErrorToast';
-// Each page below is loaded as its own chunk on first visit instead of being
-// bundled into one large upfront download — previously every user downloaded
-// the entire app (Dashboard + Leads + Clients + Billing + ... ~700KB+ of
-// source) just to see the login screen, regardless of which single page they
-// actually needed. Login/ClientPortalLogin stay as regular imports since
-// they're small and are the very first thing an unauthenticated user sees —
-// lazy-loading those would just add an extra loading flash for no benefit.
+import Dashboard from './components/Dashboard';
+import Clients from './features/clients/Clients';
+import ClientDetail from './features/clients/ClientDetail';
+import Visitors from './features/visitors/Visitors';
+import Passes from './features/passes/Passes';
+import Inventory from './features/inventory/Inventory';
+import Billing from './features/billing/Billing';
+import Bookings from './features/bookings/Bookings';
+import LeadsTracker from './features/leads/LeadsTracker';
+import Services from './features/services/Services';
 import Login from './features/auth/Login';
+import SettingsView from './features/settings/Settings';
+import Archives from './features/archives/Archives';
+import Logs from './features/logs/Logs';
+import ProposalView from './features/leads/ProposalView';
 import ClientPortalLogin from './features/client-portal/ClientPortalLogin';
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const Clients = lazy(() => import('./features/clients/Clients'));
-const ClientDetail = lazy(() => import('./features/clients/ClientDetail'));
-const Visitors = lazy(() => import('./features/visitors/Visitors'));
-const Passes = lazy(() => import('./features/passes/Passes'));
-const Inventory = lazy(() => import('./features/inventory/Inventory'));
-const Billing = lazy(() => import('./features/billing/Billing'));
-const Bookings = lazy(() => import('./features/bookings/Bookings'));
-const LeadsTracker = lazy(() => import('./features/leads/LeadsTracker'));
-const Services = lazy(() => import('./features/services/Services'));
-const SettingsView = lazy(() => import('./features/settings/Settings'));
-const Archives = lazy(() => import('./features/archives/Archives'));
-const Logs = lazy(() => import('./features/logs/Logs'));
-const ProposalView = lazy(() => import('./features/leads/ProposalView'));
-const ClientPortalDashboard = lazy(() => import('./features/client-portal/ClientPortalDashboard'));
+import ClientPortalDashboard from './features/client-portal/ClientPortalDashboard';
 import { Home, Users, Briefcase, Box, FileText, Settings, Bell, Search, UserCircle, Calendar, TrendingUp, Archive, BarChart2, Ticket, Menu, X, LogOut, MoreHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
-
-// A minimal, brand-consistent loading state shown briefly while a page
-// chunk downloads (only happens once per page per session — the browser
-// caches each chunk after that).
-const PageLoadingFallback = () => (
-  <div className="flex items-center justify-center h-full w-full min-h-[60vh]">
-    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-  </div>
-);
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 const Sidebar = ({ onLogout, profileData, isOpen, onClose }) => {
@@ -468,7 +452,6 @@ function App() {
   return (
     <Router>
       <ErrorToast />
-      <Suspense fallback={<PageLoadingFallback />}>
       <Routes>
         <Route path="/proposal/:id" element={<ProposalView />} />
 
@@ -513,7 +496,6 @@ function App() {
           } />
         )}
       </Routes>
-      </Suspense>
     </Router>
   );
 }
