@@ -3,7 +3,8 @@ const {
   getInventory, 
   addInventoryItem,
   updateInventoryItem,
-  deleteInventoryItem 
+  deleteInventoryItem,
+  restoreInventoryItem
 } = require('../controllers/inventoryController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 
@@ -18,5 +19,7 @@ router.route('/')
 router.route('/:id')
   .put(authorize('admin', 'staff'), updateInventoryItem)
   .delete(authorize('admin', 'staff'), deleteInventoryItem);
+
+router.put('/:id/restore', authorize('admin', 'staff'), restoreInventoryItem);
 
 module.exports = router;

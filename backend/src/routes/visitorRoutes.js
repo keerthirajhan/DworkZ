@@ -6,6 +6,7 @@ const {
   sendOTP, 
   verifyOTP, 
   archiveVisitor, 
+  restoreVisitor,
   getArchivedVisitors, 
   deleteVisitorPermanently 
 } = require('../controllers/visitorController');
@@ -25,6 +26,7 @@ router.get('/', authorize('admin', 'staff'), getVisitors);
 router.get('/archived', authorize('admin', 'staff'), getArchivedVisitors);
 router.put('/:id/checkout', authorize('admin', 'staff'), checkOutVisitor);
 router.put('/:id/archive', authorize('admin', 'staff'), archiveVisitor);
+router.put('/:id/restore', authorize('admin', 'staff'), restoreVisitor);
 router.delete('/:id/permanent', authorize('admin'), deleteVisitorPermanently);
 
 module.exports = router;

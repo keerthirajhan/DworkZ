@@ -181,6 +181,28 @@ exports.archiveVisitor = async (req, res) => {
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };
 
+exports.restoreVisitor = async (req, res) => {
+  try {
+    const visitor = await Visitor.findByIdAndUpdate(
+      req.params.id,
+      { isArchived: false, archivedAt: null, lastActionBy: req.user.name, lastActionAt: Date.now() },
+      { new: true }
+    );
+    if (!visitor) return res.status(404).json({ success: false, error: 'Visitor record not found' });
+
+    await logActivity({
+      title: 'Visitor Restored',
+      desc: `Visitor log for ${visitor.name} restored from archives`,
+      type: 'visitor',
+      user: req.user.id,
+      userName: req.user.name,
+      color: 'bg-emerald-500'
+    });
+
+    res.status(200).json({ success: true, data: visitor });
+  } catch (err) { res.status(400).json({ success: false, error: err.message }); }
+};
+
 exports.getArchivedVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find({ isArchived: true }).sort('-archivedAt');

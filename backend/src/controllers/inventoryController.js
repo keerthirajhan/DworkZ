@@ -103,6 +103,25 @@ exports.deleteInventoryItem = async (req, res) => {
   }
 };
 
+// @desc    Restore an archived inventory item
+// @route   PUT /api/v1/inventory/:id/restore
+// @access  Private
+exports.restoreInventoryItem = async (req, res) => {
+  try {
+    const item = await Inventory.findByIdAndUpdate(req.params.id, {
+      isArchived: false,
+      archivedAt: null
+    }, { new: true });
+
+    if (!item) {
+      return res.status(404).json({ success: false, error: 'Item not found' });
+    }
+    res.status(200).json({ success: true, data: item });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
 // @desc    Permanently delete an inventory item
 // @route   DELETE /api/v1/inventory/:id/permanent
 // @access  Private
