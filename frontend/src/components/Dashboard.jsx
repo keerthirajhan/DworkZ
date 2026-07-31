@@ -384,7 +384,7 @@ const Dashboard = () => {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
             <h2 className="text-xl font-black text-textMain uppercase tracking-tight">Recent Logs</h2>
             <div className="flex items-center gap-3">
-              {activities.length > 0 && (
+              {activities.length > 0 && user?.role === 'admin' && (
                 <button 
                   onClick={() => setIsClearLogsModalOpen(true)} 
                   className="text-rose-400 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline transition-colors"

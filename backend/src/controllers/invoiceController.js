@@ -326,6 +326,20 @@ exports.deleteInvoice = async (req, res) => {
   } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 };
 
+// @desc    Restore an archived invoice
+// @route   PUT /api/v1/invoices/:id/restore
+// @access  Private
+exports.restoreInvoice = async (req, res) => {
+  try {
+    const invoice = await Invoice.findByIdAndUpdate(req.params.id, {
+      isArchived: false,
+      archivedAt: null
+    }, { new: true });
+    if (!invoice) return res.status(404).json({ success: false, error: 'Invoice not found' });
+    res.status(200).json({ success: true, data: invoice });
+  } catch (err) { res.status(400).json({ success: false, error: err.message }); }
+};
+
 // @desc    Permanently delete an invoice
 exports.deleteInvoicePermanent = async (req, res) => {
   try {

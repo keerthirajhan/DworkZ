@@ -6,6 +6,7 @@ const {
   updateBooking,
   getArchivedBookings,
   cancelBooking,
+  restoreBooking,
   deleteBookingPermanent,
   deleteBookingsBulkPermanent
 } = require('../controllers/bookingController');
@@ -31,5 +32,6 @@ router.route('/:id')
   .delete(cancelBooking);
 
 router.delete('/:id/permanent', authorize('admin'), deleteBookingPermanent);
+router.put('/:id/restore', authorize('admin', 'staff'), restoreBooking);
 
 module.exports = router;

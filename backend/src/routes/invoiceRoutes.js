@@ -7,6 +7,7 @@ const {
   markAsPaid,
   updateInvoice,
   deleteInvoice,
+  restoreInvoice,
   getArchivedInvoices,
   deleteInvoicePermanent
 } = require('../controllers/invoiceController');
@@ -27,5 +28,6 @@ router.post('/:id/mark-paid', authorize('admin', 'staff'), markAsPaid);
 router.put('/:id', authorize('admin', 'staff'), updateInvoice);
 router.delete('/:id', authorize('admin', 'staff'), deleteInvoice);
 router.delete('/:id/permanent', authorize('admin'), deleteInvoicePermanent);
+router.put('/:id/restore', authorize('admin', 'staff'), restoreInvoice);
 
 module.exports = router;

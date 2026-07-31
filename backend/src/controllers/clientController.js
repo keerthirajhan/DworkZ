@@ -133,6 +133,37 @@ exports.deleteClient = async (req, res, next) => {
   }
 };
 
+// @desc    Restore an archived client
+// @route   PUT /api/v1/clients/:id/restore
+// @access  Private (Admin/Staff)
+exports.restoreClient = async (req, res, next) => {
+  try {
+    const client = await Client.findByIdAndUpdate(req.params.id, {
+      isArchived: false,
+      archivedAt: null,
+      lastActionBy: req.user.name,
+      lastActionAt: Date.now()
+    }, { new: true });
+
+    if (!client) {
+      return res.status(404).json({ success: false, error: 'Client not found' });
+    }
+
+    await logActivity({
+      title: 'Client Restored',
+      desc: `Restored ${client.companyName} from archives`,
+      type: 'client',
+      user: req.user.id,
+      userName: req.user.name,
+      color: 'bg-emerald-500'
+    });
+
+    res.status(200).json({ success: true, data: client });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+};
+
 // @desc    Get archived clients
 // @route   GET /api/v1/clients/archived
 // @access  Private (Admin/Staff)

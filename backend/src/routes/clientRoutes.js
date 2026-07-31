@@ -6,6 +6,7 @@ const {
   createClient,
   updateClient,
   deleteClient,
+  restoreClient,
   createProposal,
   sendProposal,
   generateAgreement,
@@ -50,6 +51,7 @@ router
   .delete(authorize('admin', 'staff'), deleteClient); // Archive action allowed for staff
 
 router.delete('/:id/permanent', authorize('admin'), deleteClientPermanently);
+router.put('/:id/restore', authorize('admin', 'staff'), restoreClient);
 
 router.post('/:id/proposals', authorize('admin', 'staff'), createProposal);
 router.get('/:id/proposals', authorize('admin', 'staff'), getProposals);
