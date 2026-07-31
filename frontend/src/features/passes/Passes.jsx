@@ -261,7 +261,7 @@ const Passes = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-textMain font-mono text-sm">{log.aadharNumber ? `****${log.aadharNumber.slice(-4)}` : 'N/A'}</div>
+                          <div className="text-textMain font-mono text-sm">{log.aadharLast4 ? `****${log.aadharLast4}` : 'N/A'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border whitespace-nowrap ${getPurposeStyle(log.purpose)}`}>
@@ -270,18 +270,18 @@ const Passes = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 text-textMuted font-medium">
-                            <Clock size={14} className="text-primary" />
+                            <Clock size={14} className="text-primary" aria-hidden="true" />
                             {new Date(log.timeIn).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           {log.status === 'Checked In' ? (
-                            <span className="px-3 py-1.5 bg-teal-500/10 text-teal-400 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-max border border-teal-500/20">
-                              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" /> {log.status}
+                            <span role="status" className="px-3 py-1.5 bg-teal-500/10 text-teal-400 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-max border border-teal-500/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" aria-hidden="true" /> {log.status}
                             </span>
                           ) : (
-                            <span className="px-3 py-1.5 bg-surface border border-borderSubtle text-textMuted rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-max">
-                              <CheckCircle size={14} /> Completed
+                            <span role="status" className="px-3 py-1.5 bg-surface border border-borderSubtle text-textMuted rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-max">
+                              <CheckCircle size={14} aria-hidden="true" /> Completed
                             </span>
                           )}
                         </td>
@@ -412,7 +412,7 @@ const Passes = () => {
                   placeholder="XXXX XXXX XXXX"
                   maxLength={12}
                 />
-                <p className="text-[10px] text-textMuted">12-digit Aadhar number — stored securely for compliance.</p>
+                <p className="text-[10px] text-textMuted">12-digit Aadhar number — only a secure hash and the last 4 digits are stored. The full number is never saved.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -487,7 +487,7 @@ const Passes = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 bg-background/40 p-4 sm:p-6 rounded-2xl border border-borderSubtle">
                   <div className="space-y-1">
                     <p className="text-[10px] text-textMuted uppercase font-bold">Aadhar Number</p>
-                    <p className="text-textMain font-mono text-base font-bold">{selectedVisitor.aadharNumber || 'N/A'}</p>
+                    <p className="text-textMain font-mono text-base font-bold">{selectedVisitor.aadharLast4 ? `****${selectedVisitor.aadharLast4}` : 'N/A'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] text-textMuted uppercase font-bold">Check-In Time</p>

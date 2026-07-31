@@ -345,7 +345,7 @@ const Visitors = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-textMain font-mono text-sm">{log.aadharNumber ? `****${log.aadharNumber.slice(-4)}` : 'N/A'}</div>
+                          <div className="text-textMain font-mono text-sm">{log.aadharLast4 ? `****${log.aadharLast4}` : 'N/A'}</div>
                           <div className="flex items-center gap-1 mt-0.5">
                             <ShieldCheck size={10} className="text-emerald-400" />
                             <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">OTP Verified</span>
@@ -488,7 +488,7 @@ const Visitors = () => {
                   placeholder="XXXX XXXX XXXX"
                   maxLength={12}
                 />
-                <p className="text-[10px] text-textMuted">12-digit Aadhar number — stored securely for compliance.</p>
+                <p className="text-[10px] text-textMuted">12-digit Aadhar number — only a secure hash and the last 4 digits are stored. The full number is never saved.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -673,7 +673,7 @@ const Visitors = () => {
                     </div>
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-textMuted uppercase font-bold">Aadhar ID</p>
-                      <p className="text-textMain font-mono text-lg">{selectedVisitor.aadharNumber || 'N/A'}</p>
+                      <p className="text-textMain font-mono text-lg">{selectedVisitor.aadharLast4 ? `****${selectedVisitor.aadharLast4}` : 'N/A'}</p>
                     </div>
                     <div className="space-y-1.5">
                       <p className="text-[10px] text-textMuted uppercase font-bold">Check-In Time</p>

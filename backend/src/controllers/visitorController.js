@@ -1,5 +1,6 @@
 const Visitor = require('../models/Visitor');
 const axios = require('axios');
+const crypto = require('crypto');
 const emailService = require('../services/emailService');
 const logActivity = require('../utils/activityLogger');
 
@@ -91,8 +92,22 @@ exports.getVisitors = async (req, res) => {
 
 exports.createVisitor = async (req, res) => {
   try {
+    const { aadharNumber, ...rest } = req.body;
+
+    if (!aadharNumber || !/^\d{12}$/.test(aadharNumber)) {
+      return res.status(400).json({ success: false, error: 'A valid 12-digit Aadhaar number is required.' });
+    }
+
+    // Never store the full number — only a keyed hash (not reversible without
+    // the server secret) and the last 4 digits already used for display.
+    const hashSecret = process.env.AADHAAR_HASH_SECRET || process.env.JWT_SECRET;
+    const aadharHash = crypto.createHmac('sha256', hashSecret).update(aadharNumber).digest('hex');
+    const aadharLast4 = aadharNumber.slice(-4);
+
     const visitor = await Visitor.create({
-      ...req.body,
+      ...rest,
+      aadharLast4,
+      aadharHash,
       lastActionBy: req.user?.name || 'Kiosk',
       lastActionAt: Date.now()
     });
