@@ -69,31 +69,24 @@ exports.createPublicBooking = async (req, res, next) => {
   try {
     const { date, startTime, endTime, clientName, email, phone, hourlyRate } = req.body;
 
-    // Reject bookings for dates that have already passed
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const bookingDate = new Date(date);
-    bookingDate.setHours(0, 0, 0, 0);
-    if (bookingDate < today) {
+    // Reject bookings for a slot start time that has already passed.
+    // Built as an explicit IST-offset ISO string rather than relying on
+    // Date.setHours() (which uses whatever timezone the server process
+    // happens to be configured with — often UTC on cloud hosts, which
+    // would silently make this check wrong). An ISO string with a fixed
+    // +05:30 offset represents an unambiguous absolute instant no matter
+    // what timezone the server itself is running in. This single check
+    // also covers any past date entirely, since an earlier date's slot
+    // start is necessarily also before "now".
+    const slotStartIST = new Date(`${date}T${startTime}:00+05:30`);
+    if (isNaN(slotStartIST.getTime())) {
+      return res.status(400).json({ success: false, error: 'Invalid date or time.' });
+    }
+    if (slotStartIST <= new Date()) {
       return res.status(400).json({
         success: false,
-        error: 'Cannot create a booking for a past date.'
+        error: 'Cannot create a booking for a date/time that has already passed.'
       });
-    }
-
-    // For today's date specifically, also reject a time slot that has
-    // already elapsed — a past date-check alone doesn't catch "9-10 AM"
-    // being booked when it's currently past 10 AM today.
-    if (bookingDate.getTime() === today.getTime()) {
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const slotStart = new Date(date);
-      slotStart.setHours(startHour, startMinute || 0, 0, 0);
-      if (slotStart <= new Date()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Cannot create a booking for a time slot that has already passed today.'
-        });
-      }
     }
     
     // Calculate Duration
@@ -151,31 +144,24 @@ exports.createBooking = async (req, res, next) => {
   try {
     const { date, startTime, endTime } = req.body;
 
-    // Reject bookings for dates that have already passed
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const bookingDate = new Date(date);
-    bookingDate.setHours(0, 0, 0, 0);
-    if (bookingDate < today) {
+    // Reject bookings for a slot start time that has already passed.
+    // Built as an explicit IST-offset ISO string rather than relying on
+    // Date.setHours() (which uses whatever timezone the server process
+    // happens to be configured with — often UTC on cloud hosts, which
+    // would silently make this check wrong). An ISO string with a fixed
+    // +05:30 offset represents an unambiguous absolute instant no matter
+    // what timezone the server itself is running in. This single check
+    // also covers any past date entirely, since an earlier date's slot
+    // start is necessarily also before "now".
+    const slotStartIST = new Date(`${date}T${startTime}:00+05:30`);
+    if (isNaN(slotStartIST.getTime())) {
+      return res.status(400).json({ success: false, error: 'Invalid date or time.' });
+    }
+    if (slotStartIST <= new Date()) {
       return res.status(400).json({
         success: false,
-        error: 'Cannot create a booking for a past date.'
+        error: 'Cannot create a booking for a date/time that has already passed.'
       });
-    }
-
-    // For today's date specifically, also reject a time slot that has
-    // already elapsed — a past date-check alone doesn't catch "9-10 AM"
-    // being booked when it's currently past 10 AM today.
-    if (bookingDate.getTime() === today.getTime()) {
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const slotStart = new Date(date);
-      slotStart.setHours(startHour, startMinute || 0, 0, 0);
-      if (slotStart <= new Date()) {
-        return res.status(400).json({
-          success: false,
-          error: 'Cannot create a booking for a time slot that has already passed today.'
-        });
-      }
     }
 
     // Calculate Duration
