@@ -169,3 +169,26 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Was referenced across the app (e.g. the invoice preview modal) but never
+   actually defined, meaning overflowing content fell back to the browser's
+   default scrollbar — often thin/near-invisible, giving no clear signal
+   that content extends further and can be scrolled to. */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(20, 184, 166, 0.4);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(20, 184, 166, 0.7);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 184, 166, 0.4) transparent;
+}
+

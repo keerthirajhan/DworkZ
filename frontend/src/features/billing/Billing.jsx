@@ -122,8 +122,13 @@ const Billing = () => {
     const style = document.createElement('style');
     style.innerHTML = `
       @media print {
-        @page { margin: 0; }
-        body { padding: 1.5cm; }
+        @page { margin: 0; size: A4; }
+        body { padding: 1cm; }
+        .invoice-print-container {
+          min-width: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -144,9 +149,9 @@ const Billing = () => {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'Paid': return <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-emerald-500/20"><CheckCircle size={12}/> Paid</span>;
-      case 'Pending': return <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-blue-500/20"><Clock size={12}/> Pending</span>;
-      case 'Overdue': return <span className="px-3 py-1 bg-rose-500/10 text-rose-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-rose-500/20"><AlertCircle size={12}/> Overdue</span>;
+      case 'Paid': return <span role="status" className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-emerald-500/20"><CheckCircle size={12} aria-hidden="true"/> Paid</span>;
+      case 'Pending': return <span role="status" className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-blue-500/20"><Clock size={12} aria-hidden="true"/> Pending</span>;
+      case 'Overdue': return <span role="status" className="px-3 py-1 bg-rose-500/10 text-rose-400 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 w-max border border-rose-500/20"><AlertCircle size={12} aria-hidden="true"/> Overdue</span>;
       default: return null;
     }
   };
@@ -292,7 +297,7 @@ const Billing = () => {
 
                   <div className="p-4 sm:p-10 overflow-y-auto custom-scrollbar flex-1" ref={printRef}>
                     <div className="overflow-x-auto w-full">
-                      <div className="border border-black bg-white min-w-[700px] lg:min-w-0">
+                      <div className="border border-black bg-white invoice-print-container min-w-[700px] lg:min-w-0">
                       <div className="text-sm font-bold text-gray-800 p-2 border-b border-black">DworkZ - Client Invoice</div>
                       <div className="grid grid-cols-2 border-b border-black">
                         <div className="p-4 border-r border-black space-y-3">
