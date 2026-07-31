@@ -402,12 +402,16 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                       <p className="text-sm font-bold text-textMain">{notif.title}</p>
                       <p className="text-xs text-textMuted">{notif.desc}</p>
                     </div>
-                    <div 
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifications[notif.id]}
+                      aria-label={notif.title}
                       onClick={() => toggleNotification(notif.id)}
                       className={`w-12 h-6 rounded-full relative transition-all duration-300 cursor-pointer ${notifications[notif.id] ? 'bg-primary shadow-[0_0_10px_rgba(20,184,166,0.3)]' : 'bg-slate-300 dark:bg-slate-700'}`}
                     >
-                      <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${notifications[notif.id] ? 'left-7' : 'left-1'}`}></div>
-                    </div>
+                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${notifications[notif.id] ? 'left-7' : 'left-1'}`}></span>
+                    </button>
                   </div>
                 ))}
               </div>
@@ -565,7 +569,7 @@ const Settings = ({ theme, setTheme, profileData, setProfileData }) => {
                             </span>
                           </td>
                           <td className="py-4 text-textMuted text-xs font-semibold">
-                            {userItem.createdAt ? new Date(userItem.createdAt).toLocaleDateString() : 'N/A'}
+                            {userItem.createdAt ? new Date(userItem.createdAt).toLocaleDateString('en-IN') : 'N/A'}
                           </td>
                           <td className="py-4 text-right">
                             {userItem._id !== (currentUser?._id || currentUser?.id) && (

@@ -253,7 +253,7 @@ const DigitalSignaturePad = ({ clientId, agreementId, clientName, companyName, o
                     {agreed && <CheckCircle size={12} className="text-white" />}
                   </button>
                   <p className="text-[11px] text-gray-500 font-medium leading-relaxed">
-                    I, <span className="font-black text-gray-800">{signerFullName || '_______________'}</span>, agree that this digital signature is legally binding and has the same force as a handwritten signature. I accept all terms and conditions in the DworkZ Workspace Agreement dated <span className="font-bold">{timestamp.toLocaleDateString()}</span>.
+                    I, <span className="font-black text-gray-800">{signerFullName || '_______________'}</span>, agree that this digital signature is legally binding and has the same force as a handwritten signature. I accept all terms and conditions in the DworkZ Workspace Agreement dated <span className="font-bold">{timestamp.toLocaleDateString('en-IN')}</span>.
                   </p>
                 </div>
               </div>

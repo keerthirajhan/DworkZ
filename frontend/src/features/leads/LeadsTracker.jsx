@@ -915,7 +915,7 @@ Thank you for your interest in DworkZ.`,
                               <span className="text-[8px] font-black text-primary/50 uppercase tracking-[0.2em]">Follow-up Date</span>
                               <div className="flex items-center gap-1.5 text-[9px] font-bold text-textMuted uppercase tracking-tighter">
                                 <span className={new Date(lead.nextFollowUp) < new Date() ? 'text-rose-400' : ''}>
-                                  {lead.nextFollowUp ? new Date(lead.nextFollowUp).toLocaleDateString() : 'Set Follow-up'}
+                                  {lead.nextFollowUp ? new Date(lead.nextFollowUp).toLocaleDateString('en-IN') : 'Set Follow-up'}
                                 </span>
                               </div>
                             </div>
@@ -1001,7 +1001,7 @@ Thank you for your interest in DworkZ.`,
                         <div className="flex items-center gap-2 text-xs">
                           <Clock size={14} className={new Date(lead.nextFollowUp) < new Date() ? 'text-rose-400' : 'text-textMuted'} />
                           <span className={new Date(lead.nextFollowUp) < new Date() ? 'text-rose-400 font-bold' : 'text-textMain'}>
-                            {lead.nextFollowUp ? new Date(lead.nextFollowUp).toLocaleDateString() : 'Not Set'}
+                            {lead.nextFollowUp ? new Date(lead.nextFollowUp).toLocaleDateString('en-IN') : 'Not Set'}
                           </span>
                         </div>
                       </td>
@@ -1460,7 +1460,7 @@ Thank you for your interest in DworkZ.`,
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                      	Seats Needed <span className="text-rose-400">*</span> {newLead.workspaceType === 'Individual Seat' && <span className="text-textMuted normal-case font-normal">(Fixed: 1)</span>}
+                      Seats Needed <span className="text-rose-400">*</span> {newLead.workspaceType === 'Individual Seat' && <span className="text-textMuted normal-case font-normal">(Fixed: 1)</span>}
                     </label>
                     {newLead.workspaceType === 'Individual Seat' ? (
                       <div className="flex items-center bg-background/50 border border-borderSubtle rounded-xl overflow-hidden opacity-60 cursor-not-allowed">
@@ -1661,13 +1661,13 @@ Thank you for your interest in DworkZ.`,
                         <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Next Follow-up</label>
                         <div className="bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-sm text-textMain font-bold flex items-center gap-2">
                           <Clock size={14} className="text-primary" />
-                          {selectedLead.nextFollowUp ? new Date(selectedLead.nextFollowUp).toLocaleDateString() : 'Not Set'}
+                          {selectedLead.nextFollowUp ? new Date(selectedLead.nextFollowUp).toLocaleDateString('en-IN') : 'Not Set'}
                         </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Enquiry Date</label>
                         <div className="bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-sm text-textMain font-bold">
-                           {selectedLead.enquiryDate ? new Date(selectedLead.enquiryDate).toLocaleDateString() : 'N/A'}
+                           {selectedLead.enquiryDate ? new Date(selectedLead.enquiryDate).toLocaleDateString('en-IN') : 'N/A'}
                         </div>
                       </div>
                     </div>

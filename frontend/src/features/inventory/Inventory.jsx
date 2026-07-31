@@ -295,7 +295,7 @@ const Inventory = () => {
                     <div className="flex items-center gap-2">
                        <span className="font-bold text-textMain">{item.vendorDetails}</span>
                     </div>
-                    <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString()}</div>
+                    <div className="text-[10px] uppercase font-black text-primary/60 mt-0.5 tracking-widest">{new Date(item.purchaseDate).toLocaleDateString('en-IN')}</div>
                  </td>
                 <td className="px-8 py-6">
                   <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${item.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
@@ -524,7 +524,7 @@ const Inventory = () => {
                
                <div className="mb-12">
                  <h1 className="text-4xl font-black uppercase tracking-tight">{selectedItemForPrint.itemName}</h1>
-                 <p className="text-gray-500 font-bold uppercase tracking-widest mt-2">{new Date(selectedItemForPrint.purchaseDate).toLocaleDateString()}</p>
+                 <p className="text-gray-500 font-bold uppercase tracking-widest mt-2">{new Date(selectedItemForPrint.purchaseDate).toLocaleDateString('en-IN')}</p>
                </div>
 
                <div className="grid grid-cols-2 gap-8 mb-12">

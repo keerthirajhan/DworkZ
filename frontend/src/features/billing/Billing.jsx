@@ -309,7 +309,7 @@ const Billing = () => {
                         <div className="flex flex-col h-full">
                            <div className={`grid grid-cols-2 flex-1 ${!['Individual Seat', 'Cabin'].includes(selectedInvoice.clientId?.workspaceType) ? 'border-b border-black' : 'h-full items-center'}`}>
                               <div className="p-3 border-r border-black h-full"><p className="text-[9px] font-black uppercase text-gray-400">Invoice No.</p><p className="font-black text-xs text-gray-800 mt-1">{selectedInvoice.invoiceId}</p></div>
-                              <div className="p-3 h-full"><p className="text-[9px] font-black uppercase text-gray-400">Dated</p><p className="font-black text-xs text-gray-800 mt-1">{new Date(selectedInvoice.dateGenerated).toLocaleDateString()}</p></div>
+                              <div className="p-3 h-full"><p className="text-[9px] font-black uppercase text-gray-400">Dated</p><p className="font-black text-xs text-gray-800 mt-1">{new Date(selectedInvoice.dateGenerated).toLocaleDateString('en-IN')}</p></div>
                            </div>
                            {!['Individual Seat', 'Cabin'].includes(selectedInvoice.clientId?.workspaceType) && (
                              <div className="grid grid-cols-2 flex-1">

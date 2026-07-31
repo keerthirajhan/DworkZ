@@ -190,7 +190,7 @@ const ClientDetail = () => {
       doc.setFontSize(10);
       doc.text(`- Monthly Rent: INR ${client.rentAmount}`, 20, 135);
       doc.text(`- Plan Type: ${client.planType}`, 20, 142);
-      doc.text(`- Start Date: ${new Date().toLocaleDateString()}`, 20, 149);
+      doc.text(`- Start Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 149);
       
       doc.setFontSize(14);
       doc.text("3. Termination", 20, 170);
@@ -811,7 +811,7 @@ const ClientDetail = () => {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsEditingDate(true)}>
-                        <span className="text-sm text-textMain font-bold">{client.onboardingDate ? new Date(client.onboardingDate).toLocaleDateString() : 'Set Date'}</span>
+                        <span className="text-sm text-textMain font-bold">{client.onboardingDate ? new Date(client.onboardingDate).toLocaleDateString('en-IN') : 'Set Date'}</span>
                         <PenTool size={12} className="text-textMuted opacity-0 group-hover/date:opacity-100 transition-opacity" />
                       </div>
                     )}
@@ -1106,9 +1106,9 @@ const ClientDetail = () => {
                               {isLapsed && <span className="px-1.5 py-0.5 bg-rose-500/10 text-[8px] text-rose-500 rounded-md border border-rose-500/20">LAPSED / CANCELLED</span>}
                             </h4>
                             <p className="text-xs text-textMuted mt-0.5 uppercase font-black tracking-tighter">
-                              {!isLapsed && agr.status === 'Signed' ? `Signed on ${new Date(agr.updatedAt || agr.createdAt).toLocaleDateString()}` : 
-                               isLapsed ? `Lapsed on ${new Date(agr.updatedAt || agr.createdAt).toLocaleDateString()}` :
-                               `${agr.status} • ${new Date(agr.createdAt).toLocaleDateString()}`}
+                              {!isLapsed && agr.status === 'Signed' ? `Signed on ${new Date(agr.updatedAt || agr.createdAt).toLocaleDateString('en-IN')}` : 
+                               isLapsed ? `Lapsed on ${new Date(agr.updatedAt || agr.createdAt).toLocaleDateString('en-IN')}` :
+                               `${agr.status} • ${new Date(agr.createdAt).toLocaleDateString('en-IN')}`}
                             </p>
                           </div>
                         </div>

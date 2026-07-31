@@ -215,7 +215,6 @@ const Layout = ({ children, onLogout, profileData }) => {
     fetchAlerts();
   }, [location.pathname, fetchAlerts]);
 
-  
   // Persistent Socket & Polling Setup (runs once on layout mount)
   useEffect(() => {
     // Poll at a much lower frequency (was every 15s = 240+ calls/hour per open tab)
@@ -332,7 +331,7 @@ const Layout = ({ children, onLogout, profileData }) => {
                                     )}
                                   </h4>
                                   <span className="text-[9px] font-bold text-textMuted uppercase tracking-widest flex-shrink-0 ml-2">
-                                    {(alert.displayDate || alert.createdAt) ? new Date(alert.displayDate || alert.createdAt).toLocaleDateString() : ''}
+                                    {(alert.displayDate || alert.createdAt) ? new Date(alert.displayDate || alert.createdAt).toLocaleDateString('en-IN') : ''}
                                   </span>
                                 </div>
                                 <p className="text-xs text-textMain font-medium">{alert.desc}</p>
