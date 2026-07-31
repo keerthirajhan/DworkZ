@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import api, { API_URL } from './utils/api';
+import ErrorToast from './components/ErrorToast';
 import Dashboard from './components/Dashboard';
 import Clients from './features/clients/Clients';
 import ClientDetail from './features/clients/ClientDetail';
@@ -451,6 +452,7 @@ function App() {
 
   return (
     <Router>
+      <ErrorToast />
       <Routes>
         <Route path="/proposal/:id" element={<ProposalView />} />
 

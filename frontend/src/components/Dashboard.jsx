@@ -36,8 +36,18 @@ const Dashboard = () => {
   const [conversion, setConversion] = useState({ leads: 0, proposalsSent: 0, awaitingSignature: 0, activeClients: 0 });
   const [utilization, setUtilization] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [slowLoading, setSlowLoading] = useState(false);
 
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowLoading(false);
+      return;
+    }
+    const timer = setTimeout(() => setSlowLoading(true), 8000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   useEffect(() => {
     const userData = localStorage.getItem('dworkz_user');
@@ -392,7 +402,9 @@ const Dashboard = () => {
           </div>
           <div className="space-y-6 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
             {loading ? (
-               <div className="text-textMuted text-sm font-bold uppercase tracking-widest">Loading...</div>
+               <div className="text-textMuted text-sm font-bold uppercase tracking-widest">
+                 {slowLoading ? 'This is taking longer than usual...' : 'Loading...'}
+               </div>
             ) : activities.length === 0 ? (
                <div className="text-textMuted text-sm font-bold uppercase tracking-widest">Empty</div>
             ) : activities.map((activity, i) => (

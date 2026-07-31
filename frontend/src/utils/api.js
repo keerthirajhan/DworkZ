@@ -76,6 +76,21 @@ api.interceptors.response.use(
         return Promise.reject(err);
       }
     }
+    // Surface a visible notification for failures that would otherwise be
+    // silent — network errors (server unreachable, timeout, CORS) and 5xx
+    // server errors. 4xx errors are left alone since calling code already
+    // shows specific validation/auth messages for those.
+    if (!originalRequest?.url?.includes('/api/v1/auth/refresh')) {
+      if (!error.response) {
+        window.dispatchEvent(new CustomEvent('api-error-toast', {
+          detail: { isNetworkError: true, message: 'Unable to reach the server. Check your connection and try again.' }
+        }));
+      } else if (error.response.status >= 500) {
+        window.dispatchEvent(new CustomEvent('api-error-toast', {
+          detail: { isNetworkError: false, message: 'The server ran into a problem processing that request. Please try again shortly.' }
+        }));
+      }
+    }
     return Promise.reject(error);
   }
 );

@@ -9,6 +9,16 @@ const Clients = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [slowLoading, setSlowLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setSlowLoading(false);
+      return;
+    }
+    const timer = setTimeout(() => setSlowLoading(true), 8000);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -291,7 +301,7 @@ const Clients = () => {
             </thead>
             <tbody className="divide-y divide-borderSubtle">
             {isLoading ? (
-              <tr><td colSpan="7" className="px-6 py-8 text-center text-textMuted">Loading clients...</td></tr>
+              <tr><td colSpan="7" className="px-6 py-8 text-center text-textMuted">{slowLoading ? 'This is taking longer than usual...' : 'Loading clients...'}</td></tr>
             ) : filteredClients.length === 0 ? (
               <tr><td colSpan="7" className="px-6 py-8 text-center text-textMuted">No clients found.</td></tr>
             ) : (
