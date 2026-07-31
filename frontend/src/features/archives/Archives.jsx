@@ -80,6 +80,24 @@ const Archives = () => {
       showNotify(err.response?.data?.error || 'Deletion failed. Admin permission required.', 'error');
     }
   };
+const handleRestore = async (id, source) => {
+    try {
+      let endpoint = '';
+      if (source === 'Visitors') endpoint = 'visitors';
+      else if (source === 'Clients') endpoint = 'clients';
+      else if (source === 'Bookings') endpoint = 'bookings';
+      else if (source === 'Inventory') endpoint = 'inventory';
+      else if (source === 'Billing') endpoint = 'invoices';
+
+      await api.put(`/api/v1/${endpoint}/${id}/restore`);
+
+      setSelectedItem(null);
+      fetchArchived();
+      showNotify(`${source} record restored.`);
+    } catch (err) {
+      showNotify(err.response?.data?.error || 'Restore failed.', 'error');
+    }
+  };
 
   const handleBulkDelete = async () => {
     try {
@@ -238,7 +256,10 @@ const Archives = () => {
                         </div>
                       </td>
                       <td className="px-8 py-5 cursor-pointer" onClick={() => setSelectedItem(item)}><div className="flex items-center gap-2 text-textMuted font-medium"><History size={14} className="text-primary/40" />{new Date(item.archivedAt || item.createdAt).toLocaleDateString()}</div></td>
-                      <td className="px-8 py-5 text-right"><button onClick={() => setSelectedItem(item)} className="text-primary hover:text-textMain transition-colors text-[10px] font-black uppercase tracking-widest">Details</button></td>
+                      <td className="px-8 py-5 text-right">
+                        <button onClick={() => handleRestore(item._id, item.source)} className="text-emerald-400 hover:text-emerald-300 transition-colors text-[10px] font-black uppercase tracking-widest mr-4">Restore</button>
+                        <button onClick={() => setSelectedItem(item)} className="text-primary hover:text-textMain transition-colors text-[10px] font-black uppercase tracking-widest">Details</button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -274,6 +295,7 @@ const Archives = () => {
                 </div>
 
                 <div className="space-y-3">
+                  <button onClick={() => handleRestore(selectedItem._id, selectedItem.source)} className="w-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/5"><History size={14} /> Restore</button>
                    <button onClick={() => setShowConfirmDelete(true)} className="w-full bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-500/5"><Trash2 size={14} /> Permanent Delete</button>
                    <button onClick={() => setSelectedItem(null)} className="w-full bg-background border border-borderSubtle text-textMuted hover:text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all">Close Details</button>
                 </div>
