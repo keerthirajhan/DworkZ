@@ -8,16 +8,13 @@ const Visitors = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     companyName: '',
     personToVisit: '',
     purpose: 'Meeting',
     email: '',
-    aadharNumber: '',
-    otp: ''
+    aadharNumber: ''
   });
 
   const [notification, setNotification] = useState(null);
@@ -131,63 +128,8 @@ const Visitors = () => {
     fetchLogs();
   }, []);
 
-  const handleSendOtp = async () => {
-    // Basic Field Validation
-    if (!formData.name?.trim()) {
-      setNotification({ type: 'error', message: 'Full Name is required before sending OTP.' });
-      return;
-    }
-    if (!formData.personToVisit?.trim()) {
-      setNotification({ type: 'error', message: 'Please specify whom you are here to visit.' });
-      return;
-    }
-    if (!formData.aadharNumber || formData.aadharNumber.length !== 12) {
-      setNotification({ type: 'error', message: 'A valid 12-digit Aadhar number is required.' });
-      return;
-    }
-    if (!formData.email || !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      setNotification({ type: 'error', message: 'Please enter a valid email address.' });
-      return;
-    }
-
-    try {
-      const res = await api.post('/api/v1/visitors/kiosk-send-otp', {
-        email: formData.email
-      });
-      setOtpSent(true);
-      if (res.data.devOtp) {
-        setFormData(prev => ({ ...prev, otp: res.data.devOtp }));
-        setNotification({ 
-          type: 'success', 
-          message: `OTP Generated! (Dev Mode Bypass: Automatically filled OTP for you: ${res.data.devOtp})` 
-        });
-      } else {
-        setNotification({ type: 'success', message: 'OTP has been sent to your email!' });
-      }
-    } catch (err) {
-      setNotification({ type: 'error', message: 'Error sending OTP: ' + (err.response?.data?.error || err.message) });
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    try {
-      await api.post('/api/v1/visitors/kiosk-verify-otp', {
-        email: formData.email,
-        otp: formData.otp
-      });
-      setOtpVerified(true);
-      setNotification({ type: 'success', message: 'OTP Verified Successfully!' });
-    } catch (err) {
-      setNotification({ type: 'error', message: 'Verification Failed: ' + (err.response?.data?.error || err.message) });
-    }
-  };
-
   const handleCheckIn = async (e) => {
     e.preventDefault();
-    if (!otpVerified) {
-      setNotification({ type: 'error', message: 'Please verify OTP before submitting.' });
-      return;
-    }
     try {
       await api.post('/api/v1/visitors', {
         name: formData.name,
@@ -196,13 +138,10 @@ const Visitors = () => {
         purpose: formData.purpose,
         email: formData.email,
         aadharNumber: formData.aadharNumber,
-        idProofUrl: capturedImage,
-        isOtpVerified: true
+        idProofUrl: capturedImage
       });
-      setFormData({ name: '', companyName: '', personToVisit: '', purpose: 'Meeting', email: '', aadharNumber: '', otp: '' });
+      setFormData({ name: '', companyName: '', personToVisit: '', purpose: 'Meeting', email: '', aadharNumber: '' });
       setCapturedImage(null);
-      setOtpSent(false);
-      setOtpVerified(false);
       setActiveTab('logs');
       fetchLogs();
       setNotification({ type: 'success', message: 'Welcome to DworkZ! Check-in Successful.' });
@@ -346,10 +285,6 @@ const Visitors = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-textMain font-mono text-sm">{log.aadharLast4 ? `****${log.aadharLast4}` : 'N/A'}</div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <ShieldCheck size={10} className="text-emerald-400" />
-                            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">OTP Verified</span>
-                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-textMain font-medium">{log.personToVisit}</div>
@@ -493,55 +428,14 @@ const Visitors = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-primary">Email Address <span className="text-rose-400">*</span></label>
-                  <div className="flex gap-3">
-                    <input
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      type="email"
-                      className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30"
-                      placeholder="visitor@example.com"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSendOtp}
-                      className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-textMain px-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap"
-                    >
-                      {otpSent ? 'Resend' : 'Send OTP'}
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-primary">
-                    OTP Verification <span className="text-rose-400">*</span>
-                    {otpVerified && <span className="ml-2 text-emerald-400">✓ Verified</span>}
-                  </label>
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={formData.otp}
-                      onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                      disabled={!otpSent || otpVerified}
-                      className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all disabled:opacity-30 placeholder:text-textMuted/30 font-mono tracking-[0.3em]"
-                      placeholder={otpSent ? '123456' : 'Send OTP first'}
-                      maxLength={6}
-                    />
-                    {otpSent && !otpVerified && (
-                      <button
-                        type="button"
-                        onClick={handleVerifyOtp}
-                        className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-textMain px-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap"
-                      >
-                        Verify
-                      </button>
-                    )}
-                    {otpVerified && (
-                      <div className="flex items-center justify-center px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                        <ShieldCheck size={20} className="text-emerald-400" />
-                      </div>
-                    )}
-                  </div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-primary">Email Address <span className="text-textMuted normal-case font-normal">(Optional)</span></label>
+                  <input
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    type="email"
+                    className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30"
+                    placeholder="visitor@example.com"
+                  />
                 </div>
               </div>
 
@@ -612,7 +506,6 @@ const Visitors = () => {
               <div className="pt-4 flex justify-end">
                 <button
                   type="submit"
-                  disabled={!otpVerified}
                   className="bg-primary hover:bg-primary/90 text-textMain px-10 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl shadow-primary/40 flex items-center gap-3 text-sm disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed"
                 >
                   Confirm Check-In <ArrowRight size={20} />
@@ -711,15 +604,6 @@ const Visitors = () => {
                     <div>
                       <p className="text-[10px] text-textMuted uppercase font-bold">Email</p>
                       <p className="text-xs text-textMain font-bold truncate w-40">{selectedVisitor.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 bg-background rounded-2xl border border-borderSubtle">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                      <ShieldCheck size={18} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-textMuted uppercase font-bold">OTP</p>
-                      <p className="text-xs text-emerald-400 font-black uppercase tracking-widest">Verified</p>
                     </div>
                   </div>
                 </div>
