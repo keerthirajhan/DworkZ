@@ -1,8 +1,31 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
 const AlertModal = ({ isOpen, onClose, title, message, type = 'success', confirmText = 'Continue' }) => {
+  const dialogRef = useRef(null);
+  const previouslyFocused = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Remember what had focus so we can restore it when the dialog closes,
+    // and move focus into the dialog immediately so screen readers announce
+    // it right away instead of only on a follow-up query.
+    previouslyFocused.current = document.activeElement;
+    dialogRef.current?.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused.current?.focus?.();
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const icons = {
@@ -30,6 +53,12 @@ const AlertModal = ({ isOpen, onClose, title, message, type = 'success', confirm
     <AnimatePresence>
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
         <motion.div 
+          ref={dialogRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="alert-modal-title"
+          aria-describedby="alert-modal-message"
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -46,8 +75,8 @@ const AlertModal = ({ isOpen, onClose, title, message, type = 'success', confirm
             {icons[type]}
           </div>
 
-          <h3 className="text-xl font-black text-textMain mb-2 uppercase tracking-tight">{title}</h3>
-          <p className="text-sm text-textMuted mb-8 leading-relaxed px-4">{message}</p>
+          <h3 id="alert-modal-title" className="text-xl font-black text-textMain mb-2 uppercase tracking-tight">{title}</h3>
+          <p id="alert-modal-message" className="text-sm text-textMuted mb-8 leading-relaxed px-4">{message}</p>
 
           <button 
             onClick={onClose}

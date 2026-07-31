@@ -1317,10 +1317,10 @@ const ClientDetail = () => {
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+            <motion.div role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-surface border border-borderSubtle rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
               <div className="flex justify-between items-center mb-8">
                 <div>
-                  <h2 className="text-2xl font-black text-textMain uppercase tracking-tight">Edit Company Profile</h2>
+                  <h2 id="edit-profile-title" className="text-2xl font-black text-textMain uppercase tracking-tight">Edit Company Profile</h2>
                   <p className="text-xs text-textMuted">Update primary contact and billing details for {client.companyName}.</p>
                 </div>
                 <button onClick={() => setIsEditModalOpen(false)} className="text-textMuted hover:text-textMain p-2">✕</button>

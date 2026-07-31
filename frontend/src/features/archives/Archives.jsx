@@ -317,9 +317,9 @@ const Archives = () => {
       <AnimatePresence>
         {showRetentionConfirm && (
           <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-surface border border-primary/50 rounded-[32px] p-10 max-w-sm w-full shadow-2xl text-center">
-              <div className="w-20 h-20 rounded-[28px] bg-primary/10 text-primary flex items-center justify-center mx-auto mb-8 shadow-inner shadow-primary/20"><ShieldAlert size={40} /></div>
-              <h3 className="text-2xl font-black text-textMain mb-3 uppercase tracking-tight">Confirm Change</h3>
+            <motion.div role="dialog" aria-modal="true" aria-labelledby="confirm-change-title" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-surface border border-primary/50 rounded-[32px] p-10 max-w-sm w-full shadow-2xl text-center">
+              <div className="w-20 h-20 rounded-[28px] bg-primary/10 text-primary flex items-center justify-center mx-auto mb-8 shadow-inner shadow-primary/20"><ShieldAlert size={40} aria-hidden="true" /></div>
+              <h3 id="confirm-change-title" className="text-2xl font-black text-textMain mb-3 uppercase tracking-tight">Confirm Change</h3>
               <p className="text-sm text-textMuted mb-10 leading-relaxed font-medium">Are you sure you want to change the <span className="text-primary font-bold uppercase">{filterType}</span> retention period to <span className="text-primary font-bold">{pendingRetentionPeriod}</span>?</p>
               <div className="flex gap-4">
                 <button 
