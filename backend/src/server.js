@@ -63,6 +63,7 @@ const alerts = require('./routes/alertRoutes');
 const email = require('./routes/emailRoutes');
 const reports = require('./routes/reportsRoutes');
 const clientPortal = require('./routes/clientPortalRoutes');
+const notifications = require('./routes/notificationRoutes');
 
 const { Server } = require('socket.io');
 const http = require('http');
@@ -125,6 +126,26 @@ const io = new Server(server, { cors: corsOptions });
 // Make io accessible via global (or req.app.set)
 global.io = io;
 
+// Client Portal notification rooms. The frontend calls socket.emit('joinClientRoom', token)
+// with its client-portal JWT after login; we verify it here (rather than trusting a raw
+// clientId from the client) so a socket can only ever join the room for the client account
+// it actually authenticated as — otherwise anyone could listen in on another client's
+// notifications just by knowing/guessing their Mongo _id.
+io.on('connection', (socket) => {
+  socket.on('joinClientRoom', (token) => {
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (decoded.type === 'client_portal' && decoded.id) {
+        socket.join(`client_${decoded.id}`);
+      }
+    } catch (err) {
+      // Invalid/expired token — silently ignore, socket just won't receive
+      // targeted notifications until a valid re-join happens.
+    }
+  });
+});
+
 // Enable CORS early in middleware stack
 app.use(cors(corsOptions));
 
@@ -164,6 +185,7 @@ app.use('/api/v1/alerts', alerts);
 app.use('/api/v1/email', email);
 app.use('/api/v1/reports', reports);
 app.use('/api/v1/client-portal', clientPortal);
+app.use('/api/v1/notifications', notifications);
 
 // HIGH PRIORITY ARCHIVAL OVERRIDES
 const { protect } = require('./middlewares/authMiddleware');

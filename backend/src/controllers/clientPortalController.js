@@ -172,7 +172,8 @@ exports.createMyBooking = async (req, res) => {
       duration: Number(duration),
       notes,
       hourlyRate: client.pricingDetails?.meetingRoomRate || 500,
-      status: 'Confirmed'
+      status: 'Confirmed',
+      history: [{ event: 'Created', by: client.companyName }]
     });
 
     await logActivity({
@@ -201,6 +202,7 @@ exports.cancelMyBooking = async (req, res) => {
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found or access denied.' });
 
     booking.status = 'Cancelled';
+    booking.history.push({ event: 'Cancelled', by: booking.clientName });
     await booking.save();
 
     await logActivity({

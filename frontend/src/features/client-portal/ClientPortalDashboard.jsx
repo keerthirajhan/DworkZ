@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Clock, X, CheckCircle, XCircle, AlertCircle, Plus, Archive, Settings, LogOut, Home, ChevronRight, Trash2, Menu } from 'lucide-react';
+import { Calendar, Clock, X, CheckCircle, XCircle, AlertCircle, Plus, Archive, Settings, LogOut, Home, ChevronRight, Trash2, Menu, Bell } from 'lucide-react';
+import NotificationBell from './NotificationBell';
+import NotificationsPage from './NotificationsPage';
 
 const ROOMS = ['Meeting Room'];
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
@@ -19,10 +22,69 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
   const [alert, setAlert] = useState({ open: false, title: '', message: '', type: 'success' });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [isChangingPw, setIsChangingPw] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [expandedBookingId, setExpandedBookingId] = useState(null);
 
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const showAlert = (title, message, type = 'success') => setAlert({ open: true, title, message, type });
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/v1/notifications`, authHeader);
+      setNotifications(res.data.data);
+    } catch (err) {
+      // Non-critical for page load — fail silently rather than blocking
+      // the bookings view with an alert over a notification fetch error.
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    try {
+      await axios.patch(`${API_URL}/api/v1/notifications/${id}/read`, {}, authHeader);
+    } catch (err) {
+      fetchNotifications(); // resync on failure
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try {
+      await axios.patch(`${API_URL}/api/v1/notifications/read-all`, {}, authHeader);
+    } catch (err) {
+      fetchNotifications();
+    }
+  };
+
+  const handleDeleteNotification = async (id) => {
+    const prev = notifications;
+    setNotifications(p => p.filter(n => n._id !== id));
+    try {
+      await axios.delete(`${API_URL}/api/v1/notifications/${id}`, authHeader);
+    } catch (err) {
+      setNotifications(prev); // restore on failure
+    }
+  };
+
+  // Real-time notifications over Socket.io, with polling as a fallback in
+  // case the socket connection drops or is blocked by a network/proxy.
+  useEffect(() => {
+    fetchNotifications();
+
+    const socket = io(API_URL, { transports: ['websocket', 'polling'] });
+    socket.emit('joinClientRoom', token);
+    socket.on('newNotification', (notification) => {
+      setNotifications(prev => [notification, ...prev]);
+    });
+
+    const pollInterval = setInterval(fetchNotifications, 45000);
+
+    return () => {
+      socket.disconnect();
+      clearInterval(pollInterval);
+    };
+  }, [token]);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -111,6 +173,7 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
 
   const navItems = [
     { key: 'bookings', label: 'Bookings', icon: Calendar },
+    { key: 'notifications', label: 'Notifications', icon: Bell },
     { key: 'archive', label: 'Archive', icon: Archive },
     { key: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -156,6 +219,11 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === key ? 'bg-primary/10 text-primary' : 'text-textMuted hover:text-textMain hover:bg-surface'}`}>
               <Icon size={18} />
               {label}
+              {key === 'notifications' && notifications.filter(n => !n.isRead).length > 0 && (
+                <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                  {notifications.filter(n => !n.isRead).length > 9 ? '9+' : notifications.filter(n => !n.isRead).length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -190,6 +258,12 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationBell
+              notifications={notifications}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAllAsRead={handleMarkAllAsRead}
+              onGoToPage={() => setActiveTab('notifications')}
+            />
             <div className="text-right hidden sm:block">
               <p className="text-xs font-black text-textMain">{client.name}</p>
               <p className="text-[10px] text-textMuted">{client.planType} · {client.workspaceDetails}</p>
@@ -246,28 +320,58 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                     </button>
                   </div>
                 ) : upcomingBookings.map(b => (
-                  <div key={b._id} className="px-4 sm:px-6 py-4 border-b border-borderSubtle last:border-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 group hover:bg-primary/5 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <Calendar size={18} className="text-primary" />
+                  <div key={b._id} className="border-b border-borderSubtle last:border-0">
+                    <div className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 group hover:bg-primary/5 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                          <Calendar size={18} className="text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-textMain">{b.roomName}</p>
+                          <p className="text-[10px] text-textMuted mt-0.5">
+                            {new Date(b.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+                            &nbsp;·&nbsp;{b.startTime} – {b.endTime}&nbsp;·&nbsp;{b.duration}hr
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-black text-textMain">{b.roomName}</p>
-                        <p className="text-[10px] text-textMuted mt-0.5">
-                          {new Date(b.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
-                          &nbsp;·&nbsp;{b.startTime} – {b.endTime}&nbsp;·&nbsp;{b.duration}hr
-                        </p>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                        <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">Confirmed</span>
+                        {b.history?.length > 0 && (
+                          <button onClick={() => setExpandedBookingId(id => id === b._id ? null : b._id)}
+                            className="text-[10px] font-black text-textMuted hover:text-primary uppercase tracking-widest transition-colors">
+                            {expandedBookingId === b._id ? 'Hide History' : 'History'}
+                          </button>
+                        )}
+                        <button onClick={() => handleCancel(b._id)}
+                          className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-all text-[10px] font-black uppercase tracking-widest">Cancel</button>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
-                      <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest">Confirmed</span>
-                      <button onClick={() => handleCancel(b._id)}
-                        className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-rose-400 hover:text-rose-500 transition-all text-[10px] font-black uppercase tracking-widest">Cancel</button>
-                    </div>
+                    {expandedBookingId === b._id && b.history?.length > 0 && (
+                      <div className="px-4 sm:px-6 pb-4 pl-[4.5rem] sm:pl-[4.5rem]">
+                        <div className="space-y-2 border-l-2 border-borderSubtle pl-4">
+                          {[...b.history].reverse().map((h, i) => (
+                            <div key={i} className="text-[11px]">
+                              <span className="font-black text-textMain">{h.event}</span>
+                              <span className="text-textMuted"> · {h.by || 'System'} · {new Date(h.at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
+          )}
+
+          {/* ── NOTIFICATIONS TAB ── */}
+          {activeTab === 'notifications' && (
+            <NotificationsPage
+              notifications={notifications}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAllAsRead={handleMarkAllAsRead}
+              onDelete={handleDeleteNotification}
+            />
           )}
 
           {/* ── ARCHIVE TAB ── */}

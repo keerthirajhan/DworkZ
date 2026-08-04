@@ -58,6 +58,17 @@ const BookingSchema = new mongoose.Schema({
     enum: ['Confirmed', 'Cancelled'], 
     default: 'Confirmed' 
   },
+  // Timeline of events for this booking (Created, Rescheduled, Updated,
+  // Cancelled, Restored), shown in the client portal's booking detail view.
+  history: [{
+    event: {
+      type: String,
+      enum: ['Created', 'Rescheduled', 'Updated', 'Cancelled', 'Restored'],
+      required: true
+    },
+    at: { type: Date, default: Date.now },
+    by: { type: String } // display name of the actor (admin/staff/client)
+  }],
   notes: {
     type: String
   },

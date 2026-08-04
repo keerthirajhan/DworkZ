@@ -191,6 +191,8 @@ exports.createBooking = async (req, res, next) => {
       req.body.clientName = client?.companyName || req.user.name;
     }
 
+    req.body.history = [{ event: 'Created', by: req.user.name }];
+
     const booking = await Booking.create(req.body);
 
     await logActivity({
@@ -201,6 +203,20 @@ exports.createBooking = async (req, res, next) => {
       userName: req.user.name,
       color: 'bg-blue-500'
     });
+
+    // If an admin/staff member created this booking on behalf of a portal
+    // client, let that client know a booking now exists for them.
+    if (booking.client && ['admin', 'staff'].includes(req.user.role)) {
+      const { notifyClient, formatBookingDateTime } = require('../utils/notificationService');
+      await notifyClient({
+        clientId: booking.client,
+        bookingId: booking._id,
+        type: 'booking_created',
+        title: 'Meeting Room Booking Created',
+        message: `A meeting room booking has been created for you, scheduled for ${formatBookingDateTime(booking.date, booking.startTime)}.`,
+        metadata: { roomName: booking.roomName, date: booking.date, startTime: booking.startTime, endTime: booking.endTime }
+      });
+    }
 
     global.io?.emit('bookingUpdated');
 
@@ -224,6 +240,13 @@ exports.updateBooking = async (req, res, next) => {
     if (!['admin', 'staff'].includes(req.user.role)) {
       return res.status(403).json({ success: false, error: 'Not authorized to edit bookings' });
     }
+
+    // Snapshot pre-update values to detect what actually changed, so we can
+    // send a "rescheduled" notification when the date/time moves versus a
+    // generic "updated" notification for other field edits.
+    const prevDate = booking.date;
+    const prevStartTime = booking.startTime;
+    const prevEndTime = booking.endTime;
 
     const { date, startTime, endTime } = req.body;
     if (date || startTime || endTime) {
@@ -254,10 +277,52 @@ exports.updateBooking = async (req, res, next) => {
       }
     }
 
-    booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    delete req.body.history; // never accept history from the client directly
+
+    const isReschedule = (date && new Date(date).getTime() !== new Date(prevDate).getTime())
+      || (startTime && startTime !== prevStartTime)
+      || (endTime && endTime !== prevEndTime);
+
+    // Any other field present on the request besides date/time/duration
+    // counts as a plain "updated" edit (e.g. roomName, notes).
+    const otherFieldsChanged = Object.keys(req.body).some(
+      key => !['date', 'startTime', 'endTime', 'duration'].includes(key)
+    );
+
+    booking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: req.body,
+        $push: { history: { event: isReschedule ? 'Rescheduled' : 'Updated', by: req.user.name } }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (booking.client) {
+      const { notifyClient, formatBookingDateTime } = require('../utils/notificationService');
+      if (isReschedule) {
+        await notifyClient({
+          clientId: booking.client,
+          bookingId: booking._id,
+          type: 'booking_rescheduled',
+          title: 'Meeting Room Booking Rescheduled',
+          message: `Your meeting room booking has been rescheduled.\n\nPrevious: ${formatBookingDateTime(prevDate, prevStartTime)}\nNew: ${formatBookingDateTime(booking.date, booking.startTime)}`,
+          metadata: {
+            previousDate: prevDate, previousStartTime: prevStartTime, previousEndTime: prevEndTime,
+            newDate: booking.date, newStartTime: booking.startTime, newEndTime: booking.endTime
+          }
+        });
+      } else if (otherFieldsChanged) {
+        await notifyClient({
+          clientId: booking.client,
+          bookingId: booking._id,
+          type: 'booking_updated',
+          title: 'Meeting Room Booking Updated',
+          message: 'Your meeting room booking details have been updated. Please review the latest schedule.',
+          metadata: { roomName: booking.roomName, date: booking.date, startTime: booking.startTime, endTime: booking.endTime }
+        });
+      }
+    }
 
     global.io?.emit('bookingUpdated');
 
@@ -307,10 +372,12 @@ exports.cancelBooking = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({ success: false, error: 'Booking not found' });
     }
-    if (!['admin', 'staff'].includes(req.user.role) && booking.user?.toString() !== req.user.id) {
+    const isStaffOrAdmin = ['admin', 'staff'].includes(req.user.role);
+    if (!isStaffOrAdmin && booking.user?.toString() !== req.user.id) {
       return res.status(403).json({ success: false, error: 'Not authorized to cancel this booking' });
     }
     booking.status = 'Cancelled';
+    booking.history.push({ event: 'Cancelled', by: req.user.name });
     await booking.save();
 
     await logActivity({
@@ -321,6 +388,22 @@ exports.cancelBooking = async (req, res, next) => {
       userName: req.user.name,
       color: 'bg-rose-500'
     });
+
+    // Only notify when an admin/staff member cancels on the client's
+    // behalf — a client cancelling their own booking (via the main booking
+    // flow, if ever reached this way) doesn't need to be told about their
+    // own action.
+    if (booking.client && isStaffOrAdmin) {
+      const { notifyClient, formatBookingDateTime } = require('../utils/notificationService');
+      await notifyClient({
+        clientId: booking.client,
+        bookingId: booking._id,
+        type: 'booking_cancelled',
+        title: 'Meeting Room Booking Cancelled',
+        message: `Your meeting room booking scheduled for ${formatBookingDateTime(booking.date, booking.startTime)} has been cancelled by the administrator.`,
+        metadata: { roomName: booking.roomName, date: booking.date, startTime: booking.startTime, endTime: booking.endTime }
+      });
+    }
 
     global.io?.emit('bookingUpdated');
 
@@ -359,6 +442,7 @@ exports.restoreBooking = async (req, res, next) => {
     }
 
     booking.status = 'Confirmed';
+    booking.history.push({ event: 'Restored', by: req.user.name });
     await booking.save();
 
     await logActivity({
