@@ -4,6 +4,7 @@ const proposalTemplate = require('../templates/proposalTemplate');
 const proposalPdfTemplate = require('../templates/proposalPdfTemplate');
 const invoiceTemplate = require('../templates/invoiceTemplate');
 const agreementTemplate = require('../templates/agreementTemplate');
+const { appendBrochurePages } = require('../utils/pdfMerge');
 
 // @desc    Send Proposal Email
 // @route   POST /api/v1/email/send-proposal
@@ -40,6 +41,14 @@ exports.sendProposal = async (req, res) => {
         const pdfHtmlContent = proposalPdfTemplate(templateData);
         finalPdfBuffer = await emailService.generatePDF(pdfHtmlContent, `Proposal_${client.companyName}.pdf`);
       }
+
+      // Automatically append the three static brochure pages after the
+      // dynamically generated first page. This is the only proposal-send
+      // path that generates its PDF server-side (the wizard's own jsPDF
+      // output is merged separately, on the frontend, before it's ever
+      // POSTed here) — so this is where the actual emailed attachment
+      // needs the same merge applied.
+      finalPdfBuffer = await appendBrochurePages(finalPdfBuffer);
     } catch (pdfErr) {
       console.error('PDF Generation failed, sending email without attachment:', pdfErr);
     }

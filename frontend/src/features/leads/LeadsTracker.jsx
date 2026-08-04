@@ -5,6 +5,7 @@ import { Search, Plus, Minus, Mail, Clock, Search as SearchIcon, CheckCircle, Tr
 import { motion, AnimatePresence } from 'framer-motion';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+import { appendBrochurePages } from '../../utils/proposalPdfMerge';
 import EmailComposeModal from '../../components/EmailComposeModal';
 // NOTE: All authenticated API calls use the 'api' utility (not raw axios) to ensure
 // the auth interceptor handles token injection and 401 refresh automatically.
@@ -137,7 +138,7 @@ const LeadsTracker = () => {
   const [selectedLead, setSelectedLead] = useState(null);
   const [isLeadDetailModalOpen, setIsLeadDetailModalOpen] = useState(false);
 
-  const generatePDFForLead = (lead) => {
+  const generatePDFForLead = async (lead) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pd = lead.pricingDetails || { pricePerSeat: 0, totalPrice: 0, discount: 0 };
@@ -224,10 +225,13 @@ const LeadsTracker = () => {
     doc.setTextColor(100);
     doc.text("This is system generated document & does not require signature.", 20, finalY + 58);
 
-    return doc.output('datauristring');
+    const dynamicPageOnly = doc.output('datauristring');
+    // Existing generation logic above is unchanged — the static brochure
+    // pages are appended automatically, after the fact, here.
+    return appendBrochurePages(dynamicPageOnly);
   };
 
-  const handleViewProposal = () => {
+  const handleViewProposal = async () => {
     try {
       // If we have a saved PDF in the database, use it!
       if (selectedLead.proposalPDFUrl && selectedLead.proposalPDFUrl.startsWith('data:application/pdf')) {
@@ -237,7 +241,7 @@ const LeadsTracker = () => {
       }
 
       // Otherwise generate on the fly
-      const dataUri = generatePDFForLead(selectedLead);
+      const dataUri = await generatePDFForLead(selectedLead);
       
       const base64String = dataUri.split('base64,')[1];
       const byteCharacters = atob(base64String);
@@ -362,7 +366,7 @@ Thank you for your interest in DworkZ.`,
     setIsProposalModalOpen(true);
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -466,13 +470,16 @@ Thank you for your interest in DworkZ.`,
     doc.setTextColor(100);
     doc.text("This is system generated document & does not require signature.", 20, finalY + 58);
 
-    return doc.output('datauristring');
+    const dynamicPageOnly = doc.output('datauristring');
+    // Existing generation logic above is unchanged — the static brochure
+    // pages are appended automatically, after the fact, here.
+    return appendBrochurePages(dynamicPageOnly);
   };
 
   const handleNextStep = async () => {
     if (proposalStep === 1) {
       try {
-        const pdf = generatePDF();
+        const pdf = await generatePDF();
         await api.post(`/api/v1/clients/${selectedClient._id}/proposals`, {
           pricePerSeat: proposalData.pricePerSeat,
           totalPrice: proposalData.totalPrice,
