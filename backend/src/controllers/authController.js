@@ -6,14 +6,18 @@ const logActivity = require('../utils/activityLogger');
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
-    // Create user
+    // SECURITY: role is intentionally NOT accepted from the request body here.
+    // This is a public, unauthenticated endpoint — allowing the caller to set
+    // their own role would let anyone self-register as 'admin'. Elevated
+    // accounts (admin/staff) must be created via the authenticated,
+    // admin-only POST /api/v1/auth/users route (see createUser below).
     const user = await User.create({
       name,
       email,
       password,
-      role
+      role: 'client'
     });
 
     await sendTokenResponse(user, 201, res);

@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.use(protect);
 
-router.get('/', getInvoices);
+router.get('/', authorize('admin', 'staff'), getInvoices);
 router.get('/archived', authorize('admin', 'staff'), getArchivedInvoices);
 router.post('/generate', authorize('admin', 'staff'), generateInvoices);
 router.post('/guest/:bookingId', authorize('admin', 'staff'), require('../controllers/invoiceController').generateGuestInvoice);
