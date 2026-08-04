@@ -61,7 +61,9 @@ exports.generateInvoices = async (req, res) => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const billingPeriod = now.toLocaleString('default', { month: 'long', year: 'numeric' });
     
-    const clients = await Client.find({ status: 'Active', isArchived: { $ne: true } });
+    // Include Converted clients alongside Active — lead-converted clients
+    // carry status: 'Converted' and would otherwise never be billed here.
+    const clients = await Client.find({ status: { $in: ['Active', 'Converted'] }, isArchived: { $ne: true } });
     const lastInvoice = await Invoice.findOne({}).sort({ invoiceId: -1 });
     let baseSequenceNum = 0;
     if (lastInvoice && lastInvoice.invoiceId) {

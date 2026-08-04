@@ -38,11 +38,13 @@ exports.clientPortalLogin = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Email and password are required.' });
     }
 
-    // Find active client by email, explicitly select password
+    // Find client by email, explicitly select password. Accept both Active
+    // and Converted statuses — lead-converted clients carry status:
+    // 'Converted' and should still be able to log into their portal.
     const client = await Client.findOne({
       contactEmail: { $regex: new RegExp(`^${email.trim()}$`, 'i') },
       portalEnabled: true,
-      status: 'Active'
+      status: { $in: ['Active', 'Converted'] }
     }).select('+portalPassword');
 
     if (!client || !client.portalPassword) {

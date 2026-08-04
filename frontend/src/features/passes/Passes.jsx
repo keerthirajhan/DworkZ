@@ -112,8 +112,7 @@ const Passes = () => {
         gstNumber: formData.gstNumber,
         purpose: formData.purpose,
         email: formData.email,
-        aadharNumber: formData.aadharNumber,
-        isOtpVerified: true
+        aadharNumber: formData.aadharNumber
       });
       setFormData({ name: '', companyName: '', companyAddress: '', gstNumber: '', purpose: 'Day Pass', email: '', aadharNumber: '' });
       setActiveTab('logs');

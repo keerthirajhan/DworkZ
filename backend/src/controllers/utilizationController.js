@@ -10,8 +10,10 @@ exports.getUtilization = async (req, res, next) => {
     const ALLOWED_HOURS = 12;
     const HOURLY_RATE = 500;
 
-    // Get all active clients
-    const clients = await Client.find({ status: 'Active' });
+    // Get all active + converted clients (lead-converted clients carry
+    // status: 'Converted', not 'Active' — both count as billable occupants,
+    // matching the aggregation logic in clientController.js)
+    const clients = await Client.find({ status: { $in: ['Active', 'Converted'] } });
 
     // Calculate utilization for each client
     const utilizationData = await Promise.all(clients.map(async (client) => {
