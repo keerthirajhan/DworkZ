@@ -64,6 +64,7 @@ const email = require('./routes/emailRoutes');
 const reports = require('./routes/reportsRoutes');
 const clientPortal = require('./routes/clientPortalRoutes');
 const notifications = require('./routes/notificationRoutes');
+const refreshments = require('./routes/refreshmentRoutes');
 
 const { Server } = require('socket.io');
 const http = require('http');
@@ -186,6 +187,7 @@ app.use('/api/v1/email', email);
 app.use('/api/v1/reports', reports);
 app.use('/api/v1/client-portal', clientPortal);
 app.use('/api/v1/notifications', notifications);
+app.use('/api/v1/refreshments', refreshments);
 
 // HIGH PRIORITY ARCHIVAL OVERRIDES
 const { protect } = require('./middlewares/authMiddleware');

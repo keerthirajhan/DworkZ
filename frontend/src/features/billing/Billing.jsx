@@ -411,7 +411,7 @@ const Billing = () => {
                                   <td className="p-4 border-r border-black text-center">1</td>
                                   <td className="p-4 border-r border-black">
                                     <div className="font-black text-gray-800 text-xs mb-1">
-                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : 'Rent Income-Space'}
+                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.billingPeriod === 'Refreshments' ? 'Refreshments & Consumables' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : 'Rent Income-Space'}
                                     </div>
                                     <div className="text-[9px] italic text-gray-400">
                                       {(() => {
@@ -420,6 +420,9 @@ const Billing = () => {
                                         }
                                         if (selectedInvoice.isGuest) {
                                           return 'One-time session reservation';
+                                        }
+                                        if (selectedInvoice.billingPeriod === 'Refreshments') {
+                                          return 'Pantry / canteen consumption charges';
                                         }
                                         const workspaceType = selectedInvoice.clientId?.workspaceType;
                                         if (workspaceType === 'Virtual Office') {
@@ -435,7 +438,7 @@ const Billing = () => {
                                       })()}
                                     </div>
                                   </td>
-                                  <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest ? 'Service' : 'Rental'}</td>
+                                  <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest || selectedInvoice.billingPeriod === 'Refreshments' ? 'Service' : 'Rental'}</td>
                                   <td className="p-4 border-r border-black text-right">
                                     ₹{dailyRate.toLocaleString()}
                                   </td>

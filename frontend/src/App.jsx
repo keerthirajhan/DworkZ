@@ -8,6 +8,7 @@ import ClientDetail from './features/clients/ClientDetail';
 import Visitors from './features/visitors/Visitors';
 import Passes from './features/passes/Passes';
 import Inventory from './features/inventory/Inventory';
+import Refreshments from './features/refreshments/Refreshments';
 import Billing from './features/billing/Billing';
 import Bookings from './features/bookings/Bookings';
 import LeadsTracker from './features/leads/LeadsTracker';
@@ -19,7 +20,7 @@ import Logs from './features/logs/Logs';
 import ProposalView from './features/leads/ProposalView';
 import ClientPortalLogin from './features/client-portal/ClientPortalLogin';
 import ClientPortalDashboard from './features/client-portal/ClientPortalDashboard';
-import { Home, Users, Briefcase, Box, FileText, Settings, Bell, Search, UserCircle, Calendar, TrendingUp, Archive, BarChart2, Ticket, Menu, X, LogOut, MoreHorizontal } from 'lucide-react';
+import { Home, Users, Briefcase, Box, FileText, Settings, Bell, Search, UserCircle, Calendar, TrendingUp, Archive, BarChart2, Ticket, Menu, X, LogOut, MoreHorizontal, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 
@@ -34,6 +35,7 @@ const Sidebar = ({ onLogout, profileData, isOpen, onClose }) => {
     { name: 'Visitors', path: '/visitors', icon: UserCircle },
     { name: 'Bookings', path: '/bookings', icon: Calendar },
     { name: 'Inventory', path: '/inventory', icon: Box },
+    { name: 'Refreshments', path: '/refreshments', icon: Coffee },
     { name: 'Billing', path: '/billing', icon: FileText },
     { name: 'Archives', path: '/archives', icon: Archive },
     { name: 'Settings', path: '/settings', icon: Settings },
@@ -486,6 +488,7 @@ function App() {
                 <Route path="/visitors" element={<Visitors />} />
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/inventory" element={<Inventory />} />
+                <Route path="/refreshments" element={<Refreshments />} />
                 <Route path="/billing" element={<Billing />} />
                 <Route path="/archives" element={<Archives />} />
                 <Route path="/logs" element={<Logs />} />
