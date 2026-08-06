@@ -157,10 +157,14 @@ const Billing = () => {
   };
 
   const getInvoiceTotal = (i) => {
-    const subTotal = (Number(i.baseAmount) || 0) + (Number(i.overageAmount) || 0);
-    const cgst = Number((subTotal * 0.09).toFixed(2));
-    const sgst = Number((subTotal * 0.09).toFixed(2));
-    return Number((subTotal + cgst + sgst).toFixed(2));
+    // BUG FIX: this used to recompute a flat 9%+9% GST on every invoice's
+    // subtotal regardless of whether that invoice actually had GST applied
+    // — so any no-GST invoice (Refreshments, or a Visitor Pass created
+    // with GST off) was inflated by 18% in every summary total on this
+    // page. The invoice's own totalAmount is already correct at creation
+    // time (every invoice-generation path sets it properly), so just use
+    // that directly instead of recalculating it here.
+    return Number(i.totalAmount) || 0;
   };
 
   const totalCollected = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + getInvoiceTotal(i), 0);
@@ -284,9 +288,18 @@ const Billing = () => {
           const baseAmt = Number(selectedInvoice.baseAmount) || 0;
           const overageAmt = Number(selectedInvoice.overageAmount) || 0;
           const subTotal = baseAmt + overageAmt;
-          const cgstAmt = Number((subTotal * 0.09).toFixed(2));
-          const sgstAmt = Number((subTotal * 0.09).toFixed(2));
-          const totalAmt = Number((subTotal + cgstAmt + sgstAmt).toFixed(2));
+          // BUG FIX: this used to recompute a flat 9%+9% GST from the
+          // subtotal unconditionally — so a no-GST invoice (Refreshments,
+          // or a Visitor Pass created with GST off) displayed a fabricated
+          // 18% added on top, both in the itemized breakdown below and in
+          // the final "Total Amount" / "Amount in Words" lines, even
+          // though the actual invoice record correctly has zero GST.
+          // Every invoice-generation path already stores the correct
+          // cgstAmount/sgstAmount/totalAmount at creation time, so read
+          // those directly instead of recalculating.
+          const cgstAmt = Number(selectedInvoice.cgstAmount) || 0;
+          const sgstAmt = Number(selectedInvoice.sgstAmount) || 0;
+          const totalAmt = Number(selectedInvoice.totalAmount) || (subTotal + cgstAmt + sgstAmt);
           return (
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
                <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-[32px] w-full max-w-4xl shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
@@ -423,7 +436,7 @@ const Billing = () => {
                                   <td className="p-4 border-r border-black text-center">1</td>
                                   <td className="p-4 border-r border-black">
                                     <div className="font-black text-gray-800 text-xs mb-1">
-                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.billingPeriod === 'Refreshments' ? 'Refreshments & Consumables' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : 'Rent Income-Space'}
+                                      {selectedInvoice.visitorId ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges` : selectedInvoice.isGuest ? 'Meeting Room Booking' : selectedInvoice.billingPeriod?.startsWith('Refreshments') ? 'Refreshments & Consumables' : selectedInvoice.clientId?.planType === 'Daily' ? 'Day pass rental charges' : 'Rent Income-Space'}
                                     </div>
                                     <div className="text-[9px] italic text-gray-400">
                                       {(() => {
@@ -433,7 +446,7 @@ const Billing = () => {
                                         if (selectedInvoice.isGuest) {
                                           return 'One-time session reservation';
                                         }
-                                        if (selectedInvoice.billingPeriod === 'Refreshments') {
+                                        if (selectedInvoice.billingPeriod?.startsWith('Refreshments')) {
                                           return 'Pantry / canteen consumption charges';
                                         }
                                         const workspaceType = selectedInvoice.clientId?.workspaceType;
@@ -450,7 +463,7 @@ const Billing = () => {
                                       })()}
                                     </div>
                                   </td>
-                                  <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest || selectedInvoice.billingPeriod === 'Refreshments' ? 'Service' : 'Rental'}</td>
+                                  <td className="p-4 border-r border-black text-center">{selectedInvoice.isGuest || selectedInvoice.billingPeriod?.startsWith('Refreshments') ? 'Service' : 'Rental'}</td>
                                   <td className="p-4 border-r border-black text-right">
                                     ₹{dailyRate.toLocaleString()}
                                   </td>
