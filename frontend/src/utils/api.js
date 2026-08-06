@@ -61,6 +61,11 @@ api.interceptors.response.use(
         return Promise.reject(error);
       } catch (err) {
         // Refresh failed, clear all session data
+        console.error('[auth] Silent token refresh failed — forcing logout.', {
+          reason: err.response?.data?.error || err.message,
+          status: err.response?.status,
+          path: window.location.pathname
+        });
         const isClientPortal = window.location.pathname.startsWith('/client-portal');
         
         localStorage.removeItem('dworkz_token');

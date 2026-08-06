@@ -181,6 +181,11 @@ ClientSchema.index({ companyName: 1 });
 ClientSchema.index({ contactEmail: 1 });
 ClientSchema.index({ status: 1 });
 ClientSchema.index({ isArchived: 1 });
+// Added for the Client Management page's paginated list (sorts by
+// -createdAt on every page) — without this, that sort requires a full
+// collection scan + in-memory sort on every request instead of using the
+// index to return already-ordered results.
+ClientSchema.index({ createdAt: -1 });
 
 // Encrypt portal password using bcrypt
 ClientSchema.pre('save', async function() {

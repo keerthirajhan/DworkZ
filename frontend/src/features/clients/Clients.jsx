@@ -24,6 +24,21 @@ const Clients = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [alert, setAlert] = useState({ show: false, title: '', message: '', type: 'success' });
   const [searchTerm, setSearchTerm] = useState('');
+  // PERFORMANCE FIX (Client Management Dashboard load lag): search now
+  // debounces before hitting the server, instead of re-filtering a
+  // fully-loaded client list on every keystroke — feels just as instant
+  // to type in, but only fires one request per pause instead of one per
+  // page load (the whole list no longer needs to be loaded at all).
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const CLIENTS_PER_PAGE = 25;
+  useEffect(() => { setPage(1); }, [debouncedSearch]); // new search = start from page 1
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -58,10 +73,27 @@ const Clients = () => {
   const fetchClients = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/api/v1/clients');
-      setClients(res.data.data);
+      // PERFORMANCE FIX (Client Management Dashboard load lag): previously
+      // fetched every client in the system, unpaginated, then filtered
+      // client-side — every page load transferred and rendered the whole
+      // table. Now fetches only the current page, with search applied
+      // server-side, and the two independent requests run in parallel
+      // instead of one after another.
+      const params = new URLSearchParams({
+        memberOnly: 'true',
+        page: String(page),
+        limit: String(CLIENTS_PER_PAGE)
+      });
+      if (debouncedSearch) params.set('search', debouncedSearch);
 
-      const statsRes = await api.get('/api/v1/clients/stats');
+      const [clientsRes, statsRes] = await Promise.all([
+        api.get(`/api/v1/clients?${params.toString()}`),
+        api.get('/api/v1/clients/stats')
+      ]);
+
+      setClients(clientsRes.data.data);
+      setTotalPages(clientsRes.data.pages || 1);
+      setTotalCount(clientsRes.data.total ?? clientsRes.data.count ?? 0);
       setStats(statsRes.data.data);
     } catch (err) {
       console.error('Failed to fetch clients', err);
@@ -72,7 +104,7 @@ const Clients = () => {
 
   useEffect(() => {
     fetchClients();
-  }, []);
+  }, [page, debouncedSearch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -131,16 +163,11 @@ const Clients = () => {
     }
   };
 
-  const filteredClients = clients.filter(c => {
-    const isSearchMatch = (c.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
-                          (c.companyName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    
-    // ONLY show active members / converted clients / awaiting activation / agreement pending (Exclude CRM Lead stages)
-    const activeStatuses = ['Active', 'Converted', 'Inactive', 'Expired', 'Awaiting Activation', 'Agreement Pending'];
-    const isMember = activeStatuses.includes(c.status);
-    
-    return isSearchMatch && isMember;
-  });
+  // Search and status-scope filtering now happen server-side (see
+  // fetchClients) — `clients` already only contains this page's matching
+  // members. Kept as a separate name to avoid touching every render
+  // reference below.
+  const filteredClients = clients;
 
   const confirmDelete = (client) => {
     setClientToDelete(client);
@@ -385,6 +412,32 @@ const Clients = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination — server-side, replaces the old "load everything" behavior */}
+        {!isLoading && totalCount > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-borderSubtle">
+            <p className="text-xs text-textMuted font-medium">
+              Showing {((page - 1) * CLIENTS_PER_PAGE) + 1}–{Math.min(page * CLIENTS_PER_PAGE, totalCount)} of {totalCount} clients
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-4 py-2 rounded-lg text-xs font-bold border border-borderSubtle text-textMain disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-all"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-bold text-textMuted px-2">Page {page} of {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="px-4 py-2 rounded-lg text-xs font-bold border border-borderSubtle text-textMain disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/5 transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add Client Modal */}

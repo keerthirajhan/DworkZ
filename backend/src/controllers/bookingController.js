@@ -254,6 +254,28 @@ exports.updateBooking = async (req, res, next) => {
       const checkStart = startTime || booking.startTime;
       const checkEnd = endTime || booking.endTime;
 
+      // BUG FIX: createBooking/createPublicBooking already rejected
+      // past-time slots (using an explicit +05:30 offset so the check is
+      // correct regardless of the server's own timezone), but updateBooking
+      // — used for rescheduling — had no equivalent check at all, so an
+      // existing booking could be rescheduled into the past with no
+      // validation whatsoever. Only enforced when the date/time is
+      // actually being changed here (a booking that's already in the past
+      // being edited for an unrelated field, e.g. notes, isn't blocked).
+      if (date || startTime) {
+        const checkDateStr = checkDate.toISOString().split('T')[0];
+        const slotStartIST = new Date(`${checkDateStr}T${checkStart}:00+05:30`);
+        if (isNaN(slotStartIST.getTime())) {
+          return res.status(400).json({ success: false, error: 'Invalid date or time.' });
+        }
+        if (slotStartIST <= new Date()) {
+          return res.status(400).json({
+            success: false,
+            error: 'Cannot reschedule a booking to a date/time that has already passed.'
+          });
+        }
+      }
+
       const overlap = await Booking.findOne({
         _id: { $ne: req.params.id },
         date: checkDate,

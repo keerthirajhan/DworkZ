@@ -93,15 +93,26 @@ const sendTokenResponse = async (user, statusCode, res) => {
   user.refreshToken = refreshToken;
   await user.save({ validateBeforeSave: false });
 
+  // BUG FIX (unexpected auto-logout): these settings previously keyed off
+  // `NODE_ENV === 'production'`. If that env var is ever unset or
+  // misconfigured on the host (easy to miss — it's not in version control,
+  // it's a dashboard setting), this used to silently fall back to
+  // `secure:false, sameSite:'lax'`, which browsers refuse to send on the
+  // cross-domain requests this app actually makes (Vercel frontend →
+  // Render backend). The refresh cookie would then never reach the
+  // server, every silent token refresh would 401, and the user would be
+  // hard-logged-out the moment their access token expired — with no
+  // error in the application code at all, just a missing deploy setting.
+  // Flipping the check to "assume production unless explicitly told this
+  // is local development" fails safe: a missing/misconfigured env var
+  // now degrades to (still-correct) cross-site cookie behavior instead of
+  // silently breaking auth.
+  const isLocalDev = process.env.NODE_ENV === 'development';
   const options = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    // Lax cookies are never sent on cross-site XHR/fetch requests (only top-level navigations).
-    // Since the frontend (app.thedworkz.com) and backend (onrender.com) are on different domains,
-    // every API call is cross-site — so this MUST be 'none' in production, paired with secure:true,
-    // or the browser silently drops the refresh cookie and /auth/refresh always 401s.
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    secure: !isLocalDev,
+    sameSite: isLocalDev ? 'lax' : 'none'
   };
 
   res
@@ -127,6 +138,7 @@ exports.refreshToken = async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
+      console.warn('[auth] Refresh attempt with no refreshToken cookie present — likely a cross-site cookie config issue or the cookie expired/was cleared.');
       return res.status(401).json({ success: false, error: 'Not authorized to refresh token' });
     }
 
@@ -137,11 +149,13 @@ exports.refreshToken = async (req, res, next) => {
     const user = await User.findById(decoded.id).select('+refreshToken');
 
     if (!user || user.refreshToken !== refreshToken) {
+       console.warn(`[auth] Refresh token mismatch for user ${decoded.id} — token was likely already rotated by a concurrent request/tab.`);
        return res.status(401).json({ success: false, error: 'Invalid refresh token' });
     }
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
+    console.error('[auth] Refresh token verification failed:', err.message);
     res.status(401).json({ success: false, error: 'Token refresh failed' });
   }
 };

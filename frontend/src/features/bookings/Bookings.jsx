@@ -208,6 +208,23 @@ const Bookings = () => {
 
   const timeSlots = Array.from({ length: 13 }, (_, i) => `${String(i + 9).padStart(2, '0')}:00`);
 
+  // BUG FIX: the date picker already blocks past dates (min={today}), but
+  // the Start Time dropdown had no equivalent guard — selecting today's
+  // date still let staff pick an hour that had already passed, which the
+  // backend would then reject only after submit. This runs against the
+  // browser's own local clock (not an explicit IST offset like the
+  // backend needs) because the frontend always runs in the user's actual
+  // local time, so there's no server-timezone ambiguity to correct for here.
+  const isPastSlot = (dateStr, timeStr) => {
+    if (!dateStr) return false;
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (dateStr !== todayStr) return false;
+    const [h, m] = timeStr.split(':').map(Number);
+    const slot = new Date();
+    slot.setHours(h, m, 0, 0);
+    return slot <= new Date();
+  };
+
   return (
     <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-6 sm:space-y-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
@@ -424,7 +441,11 @@ const Bookings = () => {
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-textMuted uppercase tracking-widest">Start Time</label>
                     <select value={bookingData.startTime} onChange={(e) => setBookingData({ ...bookingData, startTime: e.target.value })} className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm text-textMain font-bold outline-none">
-                      {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                      {timeSlots.map(t => (
+                        <option key={t} value={t} disabled={isPastSlot(bookingData.date, t)}>
+                          {t}{isPastSlot(bookingData.date, t) ? ' (Past)' : ''}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="space-y-1.5">

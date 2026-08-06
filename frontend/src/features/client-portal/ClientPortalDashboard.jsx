@@ -9,6 +9,22 @@ import NotificationsPage from './NotificationsPage';
 const ROOMS = ['Meeting Room'];
 const TIME_SLOTS = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
 
+// BUG FIX: the date field already has min={today}, but the Start Time
+// dropdown had no equivalent guard — a client could still pick an
+// already-passed hour on today's date. Runs against the browser's own
+// local clock (this always runs in the client's actual local time, so
+// there's no server-timezone ambiguity to correct for here, unlike the
+// backend check).
+const isPastSlot = (dateStr, timeStr) => {
+  if (!dateStr) return false;
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (dateStr !== todayStr) return false;
+  const [h, m] = timeStr.split(':').map(Number);
+  const slot = new Date();
+  slot.setHours(h, m, 0, 0);
+  return slot <= new Date();
+};
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const ClientPortalDashboard = ({ client, token, onLogout }) => {
@@ -516,7 +532,11 @@ const ClientPortalDashboard = ({ client, token, onLogout }) => {
                     <label className="text-[10px] font-black text-primary uppercase tracking-widest">Start Time</label>
                     <select value={bookingForm.startTime} onChange={e => setBookingForm({ ...bookingForm, startTime: e.target.value })}
                       className="w-full bg-background border border-borderSubtle rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none">
-                      {TIME_SLOTS.slice(0, -1).map(t => <option key={t}>{t}</option>)}
+                      {TIME_SLOTS.slice(0, -1).map(t => (
+                        <option key={t} value={t} disabled={isPastSlot(bookingForm.date, t)}>
+                          {t}{isPastSlot(bookingForm.date, t) ? ' (Past)' : ''}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="space-y-1.5">

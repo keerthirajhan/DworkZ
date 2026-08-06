@@ -10,6 +10,14 @@ import EmailComposeModal from '../../components/EmailComposeModal';
 // NOTE: All authenticated API calls use the 'api' utility (not raw axios) to ensure
 // the auth interceptor handles token injection and 401 refresh automatically.
 
+// PERFORMANCE FIX (dropdown latency): this was previously declared inside
+// the component body, so a brand-new array was created on every single
+// render — including every keystroke in search, every dropdown open, and
+// every optimistic status update. It's a hardcoded constant that never
+// changes, so it belongs at module scope: created once, referenced by
+// every render instead of recreated.
+const STAGES = ['New Lead', 'Proposal Sent', 'Negotiation', 'Awaiting Signature', 'Converted', 'Rejected'];
+
 const LeadsTracker = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = useState([]);
@@ -268,16 +276,44 @@ const LeadsTracker = () => {
       return;
     }
 
+    // BUG FIX (dropdown/rejection latency): previously this awaited the
+    // PATCH request, then awaited a full fetchLeads() (re-downloads every
+    // client, not just leads) before the dropdown/UI reflected anything —
+    // so every status change felt slow regardless of how fast the network
+    // actually was. Now the UI updates immediately (optimistic update),
+    // the request fires in the background, and only a failure triggers a
+    // revert + error toast — matching the existing error-toast pattern
+    // used elsewhere in this file (showAlert).
+    const previousLeads = leads;
+    setLeads(prev => prev.map(l => l._id === id ? { ...l, status: newStatus, rejectionReason: reason || l.rejectionReason } : l));
+    if (newStatus === 'Rejected') {
+      setIsLeadDetailModalOpen(false);
+    }
+
     try {
       await api.patch(`/api/v1/clients/${id}`, { 
         status: newStatus,
         rejectionReason: reason
       });
-      await fetchLeads();
-      if (newStatus === 'Rejected') {
-        setIsLeadDetailModalOpen(false);
-      }
+      // Stats (conversion counts etc.) depend on status distribution, so
+      // still refresh those in the background — but the visible lead list
+      // itself no longer waits on a round-trip.
+      api.get('/api/v1/clients/stats').then(res => {
+        const s = res.data.data;
+        setStats({
+          leads: s.leads || 0,
+          proposalsSent: s.proposalsSent || 0,
+          awaitingSignature: s.awaitingSignature || 0,
+          activeClients: s.activeClients || 0,
+          conversionRate: ((s.activeClients / (s.activeClients + s.leads || 1)) * 100).toFixed(1),
+          leadsTrend: '+12%',
+          proposalsTrend: '+5%'
+        });
+      }).catch(() => {});
     } catch (err) {
+      // Revert the optimistic update on failure so the UI never shows a
+      // status that wasn't actually saved.
+      setLeads(previousLeads);
       if (err.response?.status !== 401) {
         showAlert('Error', 'Error updating status: ' + (err.response?.data?.error || err.message));
       }
@@ -285,14 +321,18 @@ const LeadsTracker = () => {
   };
 
   const handleStatusUpdateManual = async (id, newStatus, reason = '') => {
+    setIsRejectionModalOpen(false);
+    const previousLeads = leads;
+    setLeads(prev => prev.map(l => l._id === id ? { ...l, status: newStatus, rejectionReason: reason || l.rejectionReason } : l));
+
     try {
       await api.put(`/api/v1/clients/${id}`, { 
         status: newStatus,
         rejectionReason: reason
       });
-      setIsRejectionModalOpen(false);
-      fetchLeads();
+      fetchLeads(); // full reconcile in the background, UI already reflects the change
     } catch (err) {
+      setLeads(previousLeads);
       if (err.response?.status !== 401) {
         showAlert('Error', 'Error updating status: ' + (err.response?.data?.error || err.message));
       }
@@ -300,16 +340,16 @@ const LeadsTracker = () => {
   };
 
   const moveNext = (lead) => {
-    const currentIndex = stages.indexOf(lead.status);
-    if (currentIndex < stages.length - 2) { // Don't move past Converted
-      handleStatusUpdate(lead._id, stages[currentIndex + 1]);
+    const currentIndex = STAGES.indexOf(lead.status);
+    if (currentIndex < STAGES.length - 2) { // Don't move past Converted
+      handleStatusUpdate(lead._id, STAGES[currentIndex + 1]);
     }
   };
 
   const movePrev = (lead) => {
-    const currentIndex = stages.indexOf(lead.status);
+    const currentIndex = STAGES.indexOf(lead.status);
     if (currentIndex > 0) {
-      handleStatusUpdate(lead._id, stages[currentIndex - 1]);
+      handleStatusUpdate(lead._id, STAGES[currentIndex - 1]);
     }
   };
 
@@ -671,7 +711,7 @@ Thank you for your interest in DworkZ.`,
     return matchesSearch && matchesStage && matchesPriority && matchesSource && matchesPlan;
   });
 
-  const stages = ['New Lead', 'Proposal Sent', 'Negotiation', 'Awaiting Signature', 'Converted', 'Rejected'];
+  // (stages moved to module-level STAGES constant — see top of file)
 
   return (
     <div className="p-4 sm:p-8 space-y-6 sm:space-y-10 relative">
@@ -867,7 +907,18 @@ Thank you for your interest in DworkZ.`,
       {/* Conditional View Rendering */}
       <AnimatePresence mode="wait">
         {viewMode === 'pipeline' ? (
-          filteredLeads.length > 0 ? (
+          loading ? (
+            // BUG FIX: previously this branch only checked
+            // filteredLeads.length > 0, so on initial mount (before the
+            // fetch resolves) filteredLeads was still its empty-array
+            // default, and "No Match Found" flashed before real data ever
+            // had a chance to load. Loading state is now checked first.
+            <motion.div key="pipeline-loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-40">
+              <div className="w-8 h-8 border-2 border-borderSubtle border-t-primary rounded-full animate-spin mb-4" />
+              <p className="text-textMuted text-xs font-bold uppercase tracking-widest">Loading leads...</p>
+            </motion.div>
+          ) : filteredLeads.length > 0 ? (
             <motion.div 
               key="pipeline"
               initial={{ opacity: 0, y: 20 }}
@@ -875,7 +926,7 @@ Thank you for your interest in DworkZ.`,
               exit={{ opacity: 0, y: -20 }}
               className="flex lg:grid lg:grid-cols-6 gap-4 overflow-x-auto lg:overflow-x-visible pb-6 min-h-[600px] scrollbar-thin scrollbar-thumb-borderSubtle"
             >
-              {stages.map(stage => (
+              {STAGES.map(stage => (
                 <div key={stage} className="flex flex-col gap-3 min-w-[280px] lg:min-w-0 flex-shrink-0 lg:flex-shrink">
                   <div className="flex justify-between items-center px-1">
                     <div className="flex items-center gap-1.5 overflow-hidden">
@@ -973,7 +1024,16 @@ Thank you for your interest in DworkZ.`,
                 </tr>
               </thead>
               <tbody className="divide-y divide-borderSubtle">
-                {filteredLeads.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-20 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-borderSubtle border-t-primary rounded-full animate-spin" />
+                        <p className="text-textMuted text-xs font-bold uppercase tracking-widest">Loading leads...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredLeads.length > 0 ? (
                   filteredLeads.map(lead => (
                     <tr key={lead._id} className="group hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => {
                       setSelectedLead(lead);
@@ -1001,7 +1061,7 @@ Thank you for your interest in DworkZ.`,
                           onChange={(e) => handleStatusUpdate(lead._id, e.target.value)}
                           className="bg-background border border-borderSubtle text-[10px] font-bold rounded-lg px-2 py-1 focus:outline-none focus:border-primary"
                         >
-                          {stages.map(s => <option key={s} value={s}>{s}</option>)}
+                          {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </td>
                       <td className="px-8 py-5">

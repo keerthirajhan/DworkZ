@@ -15,27 +15,32 @@ exports.getUtilization = async (req, res, next) => {
     // matching the aggregation logic in clientController.js)
     const clients = await Client.find({ status: { $in: ['Active', 'Converted'] } });
 
-    // Calculate utilization for each client
-    const utilizationData = await Promise.all(clients.map(async (client) => {
-      // Find all bookings for this client in the current month
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-      const bookings = await Booking.find({
-        client: client._id,
-        createdAt: { $gte: startOfMonth }
-      });
+    // PERFORMANCE FIX (Bug: Client Management / Dashboard load lag): this
+    // previously ran one separate Booking.find() PER CLIENT inside
+    // Promise.all — an N+1 query pattern. It looked parallel (all N
+    // queries fire concurrently), but it's still N round-trips to MongoDB,
+    // so the endpoint got linearly slower as the client base grew, and it
+    // sits directly on the Dashboard's critical path (one of its 4
+    // parallel calls). Replaced with a single aggregation query that
+    // computes every client's utilized hours for the month in one
+    // round-trip, regardless of how many clients there are.
+    const clientIds = clients.map(c => c._id);
+    const utilizationAgg = await Booking.aggregate([
+      { $match: { client: { $in: clientIds }, createdAt: { $gte: startOfMonth } } },
+      { $group: { _id: '$client', utilizedHours: { $sum: '$duration' } } }
+    ]);
+    const utilizedByClient = new Map(utilizationAgg.map(u => [u._id.toString(), u.utilizedHours || 0]));
 
-      const utilizedHours = bookings.reduce((sum, b) => sum + (b.duration || 0), 0);
-      
-      return {
-        id: client._id,
-        client: client.companyName || client.name,
-        utilized: utilizedHours,
-        allowed: ALLOWED_HOURS,
-        rate: HOURLY_RATE
-      };
+    const utilizationData = clients.map(client => ({
+      id: client._id,
+      client: client.companyName || client.name,
+      utilized: utilizedByClient.get(client._id.toString()) || 0,
+      allowed: ALLOWED_HOURS,
+      rate: HOURLY_RATE
     }));
 
     res.status(200).json({

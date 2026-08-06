@@ -13,7 +13,52 @@ const agreementTemplate = require('../templates/agreementTemplate');
 
 exports.getClients = async (req, res, next) => {
   try {
-    const clients = await Client.find({ isArchived: false });
+    const query = { isArchived: false };
+
+    // Optional "members only" scope — used by the Client Management page,
+    // which only cares about clients past the lead-pipeline stages.
+    // Omitted entirely (as Leads Management does, which needs every
+    // client regardless of stage to build its pipeline view) preserves
+    // the original unfiltered behavior exactly.
+    if (req.query.memberOnly === 'true') {
+      query.status = { $in: ['Active', 'Converted', 'Inactive', 'Expired', 'Awaiting Activation', 'Agreement Pending'] };
+    }
+
+    // Optional server-side search (name/companyName), replacing what used
+    // to be a client-side .filter() over the entire fetched list — moving
+    // it server-side is what makes pagination safe to add without
+    // silently breaking search (searching only whatever page happened to
+    // be loaded).
+    if (req.query.search) {
+      const regex = new RegExp(req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      query.$or = [{ name: regex }, { companyName: regex }];
+    }
+
+    // PERFORMANCE FIX (Client Management Dashboard load lag): pagination
+    // is opt-in via page/limit. When neither is provided, behavior is
+    // unchanged from before (fetch the full matching set) — this keeps
+    // every other existing caller of this endpoint working exactly as
+    // they did, with zero migration required on their end.
+    if (req.query.page || req.query.limit) {
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 25));
+
+      const [clients, total] = await Promise.all([
+        Client.find(query).sort('-createdAt').skip((page - 1) * limit).limit(limit),
+        Client.countDocuments(query)
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        count: clients.length,
+        total,
+        page,
+        pages: Math.max(1, Math.ceil(total / limit)),
+        data: clients
+      });
+    }
+
+    const clients = await Client.find(query);
     res.status(200).json({ success: true, count: clients.length, data: clients });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
@@ -72,7 +117,6 @@ exports.createClient = async (req, res, next) => {
 // @access  Private (Admin/Staff)
 exports.updateClient = async (req, res, next) => {
   try {
-    console.log(`[DEBUG] Updating Client ${req.params.id} with:`, req.body);
     const client = await Client.findByIdAndUpdate(req.params.id, {
       ...req.body,
       lastActionBy: req.user.name,
@@ -82,6 +126,15 @@ exports.updateClient = async (req, res, next) => {
       runValidators: false 
     });
 
+    // BUG FIX: this check previously ran AFTER the activity-log call below,
+    // which read `client.companyName` — so a missing/invalid client id
+    // crashed with a cryptic "Cannot read properties of null" instead of
+    // the intended clean 404. Checking first means an invalid id now fails
+    // fast and clearly, rather than silently misbehaving.
+    if (!client) {
+      return res.status(404).json({ success: false, error: 'Client not found' });
+    }
+
     await logActivity({
       title: 'Client Updated',
       desc: `Updated profile for ${client.companyName}`,
@@ -90,10 +143,6 @@ exports.updateClient = async (req, res, next) => {
       userName: req.user.name,
       color: 'bg-blue-500'
     });
-
-    if (!client) {
-      return res.status(404).json({ success: false, error: 'Client not found' });
-    }
 
     global.io?.emit('bookingUpdated');
     res.status(200).json({ success: true, data: client });

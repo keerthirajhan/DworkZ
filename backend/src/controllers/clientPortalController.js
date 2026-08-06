@@ -148,6 +148,23 @@ exports.createMyBooking = async (req, res) => {
 
     const { roomName, date, startTime, endTime, duration, notes } = req.body;
 
+    // BUG FIX: this self-service booking path had NO past-time validation
+    // at all (unlike createBooking/createPublicBooking, which already
+    // reject past slots) — a client could book a room for a date/time
+    // that had already passed with nothing stopping them. Same
+    // explicit-IST-offset approach as the other booking paths, so the
+    // check is correct regardless of the server's own timezone.
+    const slotStartIST = new Date(`${date}T${startTime}:00+05:30`);
+    if (isNaN(slotStartIST.getTime())) {
+      return res.status(400).json({ success: false, error: 'Invalid date or time.' });
+    }
+    if (slotStartIST <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot book a date/time that has already passed.'
+      });
+    }
+
     // Conflict check
     const conflict = await Booking.findOne({
       roomName,
