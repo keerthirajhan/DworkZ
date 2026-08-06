@@ -321,7 +321,9 @@ const Billing = () => {
                                   <p className="text-[9px] font-black uppercase text-gray-400">Billed for Date</p>
                                   <p className="font-black text-xs text-gray-800 mt-1">
                                     {selectedInvoice.serviceDate 
-                                      ? (selectedInvoice.numberOfDays > 1 && selectedInvoice.serviceEndDate
+                                      ? (selectedInvoice.visitDates?.length > 1
+                                          ? `${selectedInvoice.visitDates.length} visit dates (${new Date(selectedInvoice.visitDates[0]).toLocaleDateString('en-IN')} \u2013 ${new Date(selectedInvoice.visitDates[selectedInvoice.visitDates.length - 1]).toLocaleDateString('en-IN')})`
+                                          : selectedInvoice.numberOfDays > 1 && selectedInvoice.serviceEndDate
                                           ? `${new Date(selectedInvoice.serviceDate).toLocaleDateString('en-IN')} - ${new Date(selectedInvoice.serviceEndDate).toLocaleDateString('en-IN')}`
                                           : new Date(selectedInvoice.serviceDate).toLocaleDateString('en-IN')
                                         )
@@ -377,10 +379,20 @@ const Billing = () => {
                                 ? (baseAmt / days) 
                                 : 450;
                                 
+                              const hasVisitDates = isVisitorSplit && Array.isArray(selectedInvoice.visitDates) && selectedInvoice.visitDates.length === days;
+
                               const rows = [];
                               for (let i = 1; i <= days; i++) {
-                                const dayDate = new Date(selectedInvoice.serviceDate || selectedInvoice.dateGenerated);
-                                dayDate.setDate(dayDate.getDate() + (i - 1));
+                                // Use the actual visit date for this line when available (non-consecutive
+                                // Visitor Passes); only fall back to the old serviceDate+i consecutive-day
+                                // assumption for pre-existing invoices that predate visitDates.
+                                const dayDate = hasVisitDates
+                                  ? new Date(selectedInvoice.visitDates[i - 1])
+                                  : (() => {
+                                      const d = new Date(selectedInvoice.serviceDate || selectedInvoice.dateGenerated);
+                                      d.setDate(d.getDate() + (i - 1));
+                                      return d;
+                                    })();
                                 const formattedDateStr = dayDate.toLocaleDateString('en-IN');
                                 
                                 rows.push(
@@ -389,7 +401,7 @@ const Billing = () => {
                                     <td className="p-4 border-r border-black">
                                       <div className="font-black text-gray-800 text-xs mb-1">
                                         {selectedInvoice.visitorId 
-                                          ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges - Day ${i}` 
+                                          ? `${selectedInvoice.visitorId.purpose || 'Day Pass'} rental charges - Visit ${i}` 
                                           : `Day pass rental charges - Day ${i}`}
                                       </div>
                                       <div className="text-[9px] italic text-gray-400">

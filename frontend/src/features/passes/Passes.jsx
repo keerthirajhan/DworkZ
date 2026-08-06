@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Clock, CheckCircle, ShieldCheck, LogOut, ArrowRight, Archive, Eye, X, Mail, FileText, Ticket } from 'lucide-react';
+import { Search, UserPlus, Clock, CheckCircle, ShieldCheck, LogOut, ArrowRight, Archive, Eye, X, Mail, FileText, Ticket, CalendarDays, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../utils/api';
+import MultiDateCalendar from '../../components/MultiDateCalendar';
 
 const Passes = () => {
   const [activeTab, setActiveTab] = useState('logs');
@@ -25,10 +26,13 @@ const Passes = () => {
   const [invoiceVisitor, setInvoiceVisitor] = useState(null);
   const [invoiceAmount, setInvoiceAmount] = useState('450');
   const [applyGst, setApplyGst] = useState(true);
-  const [serviceDate, setServiceDate] = useState('');
   const [issueDate, setIssueDate] = useState('');
-  const [numberOfDays, setNumberOfDays] = useState(1);
-  const days = numberOfDays === '' ? 1 : Number(numberOfDays);
+  // Non-consecutive visit dates ('YYYY-MM-DD' strings), replacing the old
+  // Start Date + Number of Days consecutive-range fields. Sorted
+  // chronologically on every change so the chip list and invoice line
+  // items are always in date order.
+  const [visitDates, setVisitDates] = useState([]);
+  const days = visitDates.length;
 
   const handleOpenInvoiceModal = (visitor) => {
     setInvoiceVisitor(visitor);
@@ -43,23 +47,60 @@ const Passes = () => {
       setInvoiceAmount('450');
     }
     setApplyGst(true);
-    // Default issueDate to today, serviceDate to today
     const today = new Date().toISOString().split('T')[0];
-    setServiceDate(today);
     setIssueDate(today);
-    setNumberOfDays(1);
+    // Default to today's date pre-selected — matches the old default of
+    // "1 day starting today" while staff can freely add/remove from there.
+    setVisitDates([today]);
     setShowInvoiceModal(true);
   };
 
+  // Quick presets — additive (union with whatever's already selected) so
+  // staff can combine a preset with individual clicks, except Clear All.
+  const dateKey = (d) => d.toISOString().split('T')[0];
+  const addDatesToSelection = (newDates) => {
+    setVisitDates(prev => [...new Set([...prev, ...newDates])].sort());
+  };
+  const handlePresetToday = () => addDatesToSelection([dateKey(new Date())]);
+  const handlePresetYesterday = () => {
+    const d = new Date(); d.setDate(d.getDate() - 1);
+    addDatesToSelection([dateKey(d)]);
+  };
+  const handlePresetLast7Days = () => {
+    const dates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      dates.push(dateKey(d));
+    }
+    addDatesToSelection(dates);
+  };
+  const handlePresetCurrentWeek = () => {
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now); monday.setDate(now.getDate() + diffToMonday);
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      dates.push(dateKey(d));
+    }
+    addDatesToSelection(dates);
+  };
+  const handleClearAllDates = () => setVisitDates([]);
+  const handleRemoveDate = (dateStr) => setVisitDates(prev => prev.filter(d => d !== dateStr));
+
   const handleGenerateInvoice = async () => {
     if (!invoiceVisitor) return;
+    if (visitDates.length === 0) {
+      setNotification({ type: 'error', message: 'Select at least one visit date before generating the invoice.' });
+      return;
+    }
     try {
       const res = await api.post(`/api/v1/invoices/visitor/${invoiceVisitor._id}`, {
         amount: Number(invoiceAmount) || 0,
         applyGst,
-        serviceDate,
-        issueDate,
-        numberOfDays: days
+        visitDates,
+        issueDate
       });
       if (res.data.success) {
         setNotification({ 
@@ -594,7 +635,7 @@ const Passes = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-surface border border-primary/20 rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+              className="bg-surface border border-primary/20 rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 max-w-lg w-full shadow-2xl relative overflow-hidden max-h-[92vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6 pb-4 border-b border-borderSubtle">
                 <h3 className="text-lg font-bold text-textMain uppercase tracking-tight flex items-center gap-2">
@@ -618,7 +659,7 @@ const Passes = () => {
                   <p className="text-xs text-textMuted font-medium">{invoiceVisitor.email}</p>
                 </div>
 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Daily Rate (INR)</label>
                     <input
@@ -628,44 +669,6 @@ const Passes = () => {
                       className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30 font-black text-lg"
                       placeholder="450"
                     />
-                                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-primary">Number of Days</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={numberOfDays}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setNumberOfDays(val === '' ? '' : Math.max(1, parseInt(val) || 1));
-                      }}
-                      className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all placeholder:text-textMuted/30 font-black text-lg"
-                      placeholder="1"
-                    />
-                  </div>
-                </div>
-
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                   <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Service Start Date</label>
-                    <input
-                      type="date"
-                      value={serviceDate}
-                      onChange={(e) => setServiceDate(e.target.value)}
-                      className="w-full bg-background border border-borderSubtle rounded-2xl px-4 py-3 text-textMain focus:border-primary focus:outline-none transition-all font-bold text-sm"
-                    />
-                    <p className="text-[9px] text-textMuted">
-                      {days > 1 && serviceDate ? (
-                        <span className="text-primary font-bold">
-                          Billed to: {(() => {
-                            const d = new Date(serviceDate);
-                            d.setDate(d.getDate() + (days - 1));
-                            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                          })()}
-                        </span>
-                      ) : (
-                        'Date client used the pass'
-                      )}
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-primary">Date of Issue</label>
@@ -673,10 +676,72 @@ const Passes = () => {
                       type="date"
                       value={issueDate}
                       onChange={(e) => setIssueDate(e.target.value)}
-                      className="w-full bg-background border border-borderSubtle rounded-2xl px-4 py-3 text-textMain focus:border-primary focus:outline-none transition-all font-bold text-sm"
+                      className="w-full bg-background border border-borderSubtle rounded-2xl px-5 py-4 text-textMain focus:border-primary focus:outline-none transition-all font-bold text-sm"
                     />
-                    <p className="text-[9px] text-textMuted">Invoice issue date</p>
                   </div>
+                </div>
+
+                {/* ── Visit Dates: multi-select calendar ── */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                      <CalendarDays size={13} /> Visit Dates
+                    </label>
+                    <span className="text-[10px] text-textMuted font-bold">Click a date to add or remove it</span>
+                  </div>
+
+                  {/* Quick presets */}
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: 'Today', fn: handlePresetToday },
+                      { label: 'Yesterday', fn: handlePresetYesterday },
+                      { label: 'Last 7 Days', fn: handlePresetLast7Days },
+                      { label: 'This Week', fn: handlePresetCurrentWeek },
+                    ].map(p => (
+                      <button key={p.label} type="button" onClick={p.fn}
+                        className="px-3 py-1.5 bg-background border border-borderSubtle hover:border-primary/40 rounded-lg text-[10px] font-bold text-textMuted hover:text-primary transition-colors">
+                        {p.label}
+                      </button>
+                    ))}
+                    {visitDates.length > 0 && (
+                      <button type="button" onClick={handleClearAllDates}
+                        className="px-3 py-1.5 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 rounded-lg text-[10px] font-bold text-rose-400 transition-colors">
+                        Clear All Dates
+                      </button>
+                    )}
+                  </div>
+
+                  <MultiDateCalendar selectedDates={visitDates} onChange={setVisitDates} />
+
+                  {/* Selected dates as removable chips */}
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-textMuted mb-2">
+                      Selected Visit Dates {visitDates.length > 0 && `(${visitDates.length})`}
+                    </p>
+                    {visitDates.length === 0 ? (
+                      <div className="flex items-center gap-2 text-[11px] text-orange-400 font-bold bg-orange-500/5 border border-orange-500/20 rounded-xl px-3 py-2.5">
+                        <AlertCircle size={13} className="shrink-0" /> No dates selected yet — pick at least one date above.
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {visitDates.map(d => (
+                          <span key={d} className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary rounded-lg pl-2.5 pr-1.5 py-1 text-[11px] font-bold">
+                            {new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                            <button type="button" onClick={() => handleRemoveDate(d)} aria-label={`Remove ${d}`}
+                              className="hover:bg-primary/20 rounded p-0.5 transition-colors">
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Number of Days — read-only, always derived from the selected dates */}
+                <div className="flex items-center justify-between p-4 bg-background rounded-2xl border border-borderSubtle">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-textMuted">Number of Days (auto)</span>
+                  <span className="text-lg font-black text-textMain">{days}</span>
                 </div>
 
                 <div className="flex items-center gap-3 p-4 bg-background rounded-2xl border border-borderSubtle">
@@ -692,9 +757,14 @@ const Passes = () => {
                   </label>
                 </div>
 
+                {/* Summary panel — updates instantly as dates are selected */}
                 <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
                   <div className="flex justify-between text-xs text-textMuted font-medium">
-                    <span>Base Fare {days > 1 ? `(₹${Number(invoiceAmount || 0).toLocaleString()} x ${days} Days)` : ''}:</span>
+                    <span>Total Visits:</span>
+                    <span className="font-black text-textMain">{days}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-textMuted font-medium">
+                    <span>Subtotal {days > 0 ? `(₹${Number(invoiceAmount || 0).toLocaleString()} x ${days})` : ''}:</span>
                     <span>₹{Number((Number(invoiceAmount || 0) * days).toFixed(2)).toLocaleString()}</span>
                   </div>
                   {applyGst && (
@@ -711,7 +781,7 @@ const Passes = () => {
                   )}
                   <div className="h-px bg-borderSubtle opacity-30 my-2"></div>
                   <div className="flex justify-between text-sm font-black text-textMain">
-                    <span>Total Amount:</span>
+                    <span>Grand Total:</span>
                     <span>
                       ₹{applyGst 
                         ? ((Number(invoiceAmount || 0) * days) * 1.18).toFixed(2) 
@@ -719,22 +789,23 @@ const Passes = () => {
                       }
                     </span>
                   </div>
-                </div>               </div>
-
-                <div className="pt-4 flex gap-4">
-                  <button
-                    onClick={() => { setShowInvoiceModal(false); setInvoiceVisitor(null); }}
-                    className="flex-1 bg-surface border border-borderSubtle text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleGenerateInvoice}
-                    className="flex-1 bg-primary text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  >
-                    Generate Invoice
-                  </button>
                 </div>
+              </div>
+
+              <div className="pt-6 flex gap-4">
+                <button
+                  onClick={() => { setShowInvoiceModal(false); setInvoiceVisitor(null); }}
+                  className="flex-1 bg-surface border border-borderSubtle text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleGenerateInvoice}
+                  disabled={visitDates.length === 0}
+                  className="flex-1 bg-primary text-textMain py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  Generate Invoice
+                </button>
               </div>
             </motion.div>
           </div>
